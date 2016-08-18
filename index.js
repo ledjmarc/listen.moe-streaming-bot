@@ -54,5 +54,8 @@ c.connect()
 /*
 
 TODO's
-- Update game with title of current song - GET from https://listen.moe/info.txt
+- Update played game text with title of current song - GET https://listen.moe/info.txt
+- Require "manage server" permission to set the server's channel, so users can't move the bot around
 - Make code less shit
+
+*/
