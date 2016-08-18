@@ -1,0 +1,4 @@
+{
+    "token": "Bot's token",
+    "stream": "http://listen.moe:9999/stream"
+}
