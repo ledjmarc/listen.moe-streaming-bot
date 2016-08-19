@@ -48,11 +48,9 @@ c.on('ready', () => {
                 }
             })
             useSongName = false // next update will not use this
-            console.log('Edited - current song')
         } else {
             c.editGame({name: `on ${ c.guilds.size } servers`})
             useSongName = true // next update will use other thing
-            console.log('Edited - server count')
         }
     }
     updateGame()
