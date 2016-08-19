@@ -4,8 +4,8 @@ A bot that streams music from [listen.moe](http://listen.moe) into your Discord 
 
 ## Run it yourself
 
-- rename `config-sample.json` to `config.json`
-- create a blank file called `guilds.json`
-- `npm i abalabahaha/eris#dev`
-- `npm i request`
-- Run: `node index.js`
+- ` git clone <this repo>`
+- `npm i`
+- Rename `config-sample.json` to `config.json` and fill in your token
+- `echo "{}" >> guilds.json` (soon I'll make this part unnecessary)
+- `node index.js`
