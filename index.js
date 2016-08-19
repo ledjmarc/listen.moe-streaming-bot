@@ -24,11 +24,11 @@ function setGuildChannel (client, guild, channel) { // Record a channel for the 
 
 function getSongInfo (callback) {
     request(config.streamInfo, (err, res, body) => {
-        try { body = JSON.parse(body); } catch (e) { err = e }
+        try { body = JSON.parse(body) } catch (e) { err = e }
         if (!err) { // \o/
             callback(null, body)
         } else { // shit
-            callback(err);
+            callback(err)
         }
     })
 }
@@ -37,7 +37,7 @@ c.on('ready', () => {
     console.log('Connected.')
 
     // This code has no practical value, but it's fun so w/e
-    var useSongName = true;
+    var useSongName = true
     function updateGame () {
         if (useSongName) {
             getSongInfo((err, body) => {
@@ -55,8 +55,8 @@ c.on('ready', () => {
             console.log('Edited - server count')
         }
     }
-    updateGame();
-    setInterval(updateGame, config.gameInterval);
+    updateGame()
+    setInterval(updateGame, config.gameInterval)
 
     // end useless code - begin code that does useful things
     // (I could get into an argument about relative usefulness here but I'll leave that for another unnecessary comment)
