@@ -25,6 +25,18 @@ function setGuildChannel(client, guild, channel) { // Record a channel for the s
 
 c.on('ready', () => {
     console.log('Connected.')
+
+    // This code has no practical value, but it's fun so w/e
+    let updateGame = () => {
+        let options = config.games;
+        let choice = options[~~(Math.random() * options.length)];
+        c.editGame({name: choice});
+    }
+    updateGame();
+    setInterval(updateGame, 15000);
+
+    // end useless code - begin code that does useful things
+    // (I could get into an argument about relative usefulness here but I'll leave that for another unnecessary comment)
     for (let guild of Object.keys(guilds)) { // loop through all the servers recorded
         let channel = guilds[guild] // Get the channel for each
         joinVoice(c, channel) // Connect and play
