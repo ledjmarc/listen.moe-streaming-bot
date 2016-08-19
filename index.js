@@ -104,5 +104,6 @@ TODO's
 - Update played game text with title of current song - GET https://listen.moe/info.txt
 - Require "manage server" permission to set the server's channel, so users can't move the bot around
 - Make code less shit
+- Stop doing cool things and pay attention to this list
 
 */
