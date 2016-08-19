@@ -27,13 +27,28 @@ c.on('ready', () => {
     console.log('Connected.')
 
     // This code has no practical value, but it's fun so w/e
-    let updateGame = () => {
-        let options = config.games;
-        let choice = options[~~(Math.random() * options.length)];
-        c.editGame({name: choice});
+    var useSongName = true;
+    function updateGame () {
+        if (useSongName) {
+            request(config.streamInfo, (err, res, body) => {
+                console.log('Body: ' + body);
+                try { body = JSON.parse(body); } catch (e) { err = e }
+                if (!err) { // \o/
+                    c.editGame({name: `${body.artist} // ${body.song}`})
+                } else { //rip in pepperoni
+                    c.editGame({name: 'music probably'})
+                }
+            })
+            useSongName = false // next update will not use this
+            console.log('Edited - current song')
+        } else {
+            c.editGame({name: `on ${ c.guilds.size } servers`})
+            useSongName = true // next update will use other thing
+            console.log('Edited - server count')
+        }
     }
     updateGame();
-    setInterval(updateGame, 15000);
+    setInterval(updateGame, config.gameInterval);
 
     // end useless code - begin code that does useful things
     // (I could get into an argument about relative usefulness here but I'll leave that for another unnecessary comment)

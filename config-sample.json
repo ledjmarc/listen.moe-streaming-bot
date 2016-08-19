@@ -1,4 +1,6 @@
 {
     "token": "Bot's token",
-    "stream": "http://listen.moe:9999/stream"
+    "stream": "http://listen.moe:9999/stream",
+    "streamInfo": "http://listen.moe/info.txt",
+    "gameInterval": 15000
 }
