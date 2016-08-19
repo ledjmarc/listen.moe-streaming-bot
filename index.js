@@ -20,7 +20,6 @@ function setGuildChannel (client, guild, channel) { // Record a channel for the 
     fs.writeFile('guilds.json', JSON.stringify(_guilds, null, 4), 'utf-8', err => { // write the config file with the new data
         if (err) console.log(err)
     })
-    guilds = reload('./guilds.json') // Reload the config file
 }
 
 function getSongInfo (callback) {
