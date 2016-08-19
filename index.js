@@ -100,7 +100,7 @@ c.on('messageCreate', (msg) => { // Commands 'n' shit
                 }`)
             }
         })
-    } else if (msg.content.startsWith("~~"))
+    }
 })
 
 c.connect()
