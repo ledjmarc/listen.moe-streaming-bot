@@ -23,6 +23,17 @@ function setGuildChannel (client, guild, channel) { // Record a channel for the 
     guilds = reload('./guilds.json') // Reload the config file
 }
 
+function getSongInfo (callback) {
+    request(config.streamInfo, (err, res, body) => {
+        try { body = JSON.parse(body); } catch (e) { err = e }
+        if (!err) { // \o/
+            callback(null, body)
+        } else { // shit
+            callback(err);
+        }
+    })
+}
+
 c.on('ready', () => {
     console.log('Connected.')
 
@@ -30,12 +41,10 @@ c.on('ready', () => {
     var useSongName = true;
     function updateGame () {
         if (useSongName) {
-            request(config.streamInfo, (err, res, body) => {
-                console.log('Body: ' + body);
-                try { body = JSON.parse(body); } catch (e) { err = e }
-                if (!err) { // \o/
+            getSongInfo((err, body) => {
+                if (!err) {
                     c.editGame({name: `${body.artist} // ${body.song}`})
-                } else { //rip in pepperoni
+                } else {
                     c.editGame({name: 'music probably'})
                 }
             })
