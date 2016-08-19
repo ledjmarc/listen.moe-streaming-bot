@@ -100,7 +100,7 @@ c.on('messageCreate', (msg) => { // Commands 'n' shit
                 }`)
             }
         })
-    }
+    } else if (msg.content.startsWith("~~"))
 })
 
 c.connect()
@@ -108,8 +108,6 @@ c.connect()
 /*
 
 TODO's
-- Require "manage server" permission to set the server's channel, so users can't move the bot around
-- Make code less shit
-- Stop doing cool things and pay attention to this list
+- Find more things to do
 
 */
