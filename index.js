@@ -38,7 +38,7 @@ function memberHasManageGuild (member) { // Return whether or not the user can m
 }
 
 c.on('ready', () => {
-    console.log('Connected.')
+    console.log(`Connected as ${c.user.username} / Currently in ${c.guilds.size} servers`)
 
     // This code has no practical value, but it's fun so w/e
     var useSongName = true
@@ -84,7 +84,6 @@ c.on('messageCreate', (msg) => { // Commands 'n' shit
             c.createMessage(msg.channel.id, 'Join a voice channel first!')
         } else {
             // oh dang hello
-            console.log(msg.channel.guild.id + "/" + channelId)
             setGuildChannel(c, msg.channel.guild.id, channelId)
             joinVoice(c, channelId)
             c.createMessage(msg.channel.id, '\\o/')
