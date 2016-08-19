@@ -67,9 +67,9 @@ c.on('ready', () => {
     }
 })
 
-c.on('messageCreate', (msg) => {
+c.on('messageCreate', (msg) => { // Commands 'n' shit
     if (!msg.channel.guild) return // throw out PMs
-    if (msg.content === "!join") { // Join command - joins the VC the user is in, and sets that as the music channel for the server
+    if (msg.content.startsWith("~~join")) { // Join command - joins the VC the user is in, and sets that as the music channel for the server
         let member = msg.member
         let channelId = member.voiceState ? member.voiceState.channelID : null
         if (!channelId) {
@@ -82,6 +82,17 @@ c.on('messageCreate', (msg) => {
             joinVoice(c, channelId)
             c.createMessage(msg.channel.id, '\\o/')
         }
+    } else if (msg.content.startsWith("~~np") || msg.content.startsWith("~~nowplaying") || msg.content.startsWith("~~playing")) { //lol
+        // Now playing - Returns info about the currently playing song
+        getSongInfo((err, info) => {
+            if (!err) {
+                c.createMessage(msg.channel.id, `**Now playing:** "${info.song}" by ${info.artist}\n${
+                    info.request ? `**Requested by:** ${info.request} (<https://forum.listen.moe/u/${info.request}>)` : ''
+                    //3deep5me
+                    // seriously though there's gotta be a better way to do this shit
+                }`)
+            }
+        })
     }
 })
 
