@@ -8,13 +8,13 @@ let guilds = reload('./guilds.json')
 
 let c = new Eris.Client(config.token)
 
-function joinVoice(client, channel) { // Join a voice channel and start playing the stream there
+function joinVoice (client, channel) { // Join a voice channel and start playing the stream there
     client.joinVoiceChannel(channel).then(vc => { // Join
         vc.playStream(request(config.stream)) // Play
     })
 }
 
-function setGuildChannel(client, guild, channel) { // Record a channel for the server
+function setGuildChannel (client, guild, channel) { // Record a channel for the server
     var _guilds = guilds // get current config
     _guilds[guild] = channel // set the channel for this server in the new config
     fs.writeFile('guilds.json', JSON.stringify(_guilds, null, 4), 'utf-8', err => { // write the config file with the new data
