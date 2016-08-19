@@ -16,6 +16,7 @@ function joinVoice (client, channel) { // Join a voice channel and start playing
 
 function setGuildChannel (client, guild, channel) { // Record a channel for the server
     var _guilds = guilds // get current config
+    _guilds[guild] = _guilds[guild] || {} // create server config if it doesn't already exist
     _guilds[guild].vc = channel // set the channel for this server in the new config
     fs.writeFile('guilds.json', JSON.stringify(_guilds, null, 4), 'utf-8', err => { // write the config file with the new data
         if (err) console.log(err)
