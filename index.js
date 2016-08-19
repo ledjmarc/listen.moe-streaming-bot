@@ -22,7 +22,7 @@ function setGuildChannel (client, guild, channel) { // Record a channel for the 
     })
 }
 
-function getSongInfo (callback) {
+function getSongInfo (callback) { // Get the stream's info for the current song
     request(config.streamInfo, (err, res, body) => {
         try { body = JSON.parse(body) } catch (e) { err = e }
         if (!err) { // \o/
@@ -31,6 +31,10 @@ function getSongInfo (callback) {
             callback(err)
         }
     })
+}
+
+function memberHasManageGuild (member) { // Return whether or not the user can manage the server (this is the basis for command permissions)
+    return member.permission.json.manageGuild
 }
 
 c.on('ready', () => {
@@ -66,7 +70,13 @@ c.on('ready', () => {
 
 c.on('messageCreate', (msg) => { // Commands 'n' shit
     if (!msg.channel.guild) return // throw out PMs
-    if (msg.content.startsWith("~~join")) { // Join command - joins the VC the user is in, and sets that as the music channel for the server
+    if (msg.content.startsWith("~~join")) {
+        // Join command - joins the VC the user is in, and sets that as the music channel for the server
+        // Requires manage server
+        if (!memberHasManageGuild(msg.member)) {
+            c.createMessage(msg.channel.id, "You can't do that, gotta have the 'manage server' permission.")
+            return
+        }
         let member = msg.member
         let channelId = member.voiceState ? member.voiceState.channelID : null
         if (!channelId) {
