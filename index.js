@@ -16,7 +16,7 @@ function joinVoice (client, channel) { // Join a voice channel and start playing
 
 function setGuildChannel (client, guild, channel) { // Record a channel for the server
     var _guilds = guilds // get current config
-    _guilds[guild] = channel // set the channel for this server in the new config
+    _guilds[guild].vc = channel // set the channel for this server in the new config
     fs.writeFile('guilds.json', JSON.stringify(_guilds, null, 4), 'utf-8', err => { // write the config file with the new data
         if (err) console.log(err)
     })
@@ -63,8 +63,8 @@ c.on('ready', () => {
     // end useless code - begin code that does useful things
     // (I could get into an argument about relative usefulness here but I'll leave that for another unnecessary comment)
     for (let guild of Object.keys(guilds)) { // loop through all the servers recorded
-        let channel = guilds[guild] // Get the channel for each
-        joinVoice(c, channel) // Connect and play
+        let channel = guilds[guild].vc // Get the channel for this guild
+        if (channel) joinVoice(c, channel) // Connect and play if there's one set
     }
 })
 
