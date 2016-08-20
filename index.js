@@ -16,12 +16,11 @@ let guilds = reload('./guilds.json') // Now that the file definitely exists, we'
 let c = new Eris.Client(config.token)
 
 function joinVoice (client, guild, channel) { // Join a voice channel and start playing the stream there
-    cc = client.voiceConnections.find(vc => vc.id === guild)
-    if (cc) {
+    cc = client.voiceConnections.find(vc => vc.id === guild) // Find a current connection in this guild
+    if (cc) { // If there is one
         cc.switchChannel(channel) // Just switch the channel for this connection
-    } else {
+    } else { // Looks like we'll need to make a new one
         client.joinVoiceChannel(channel).then(vc => { // Join
-            vc.on('error', console.log)
             vc.playStream(request(config.stream)) // Play
         })
     }
