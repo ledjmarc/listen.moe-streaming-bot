@@ -98,22 +98,18 @@ c.on('messageCreate', (msg) => { // Commands 'n' shit
     let isPrivate = guild ? false : true
     if (!isPrivate) guild = guild.id
     let prefix = getGuildConfig(guild, 'prefix')
-    console.log(prefix)
 
     if (!content.startsWith(prefix)) return // If prefix isn't matched, throw out the message
     content = content.substr(prefix.length)
 
-    if (content.startsWith('join')) {
+    if (content === 'join') {
         // Join command - joins the VC the user is in, and sets that as the music channel for the server
         // Requires manage server; can't be used in PM
         if (isPrivate) {
             c.createMessage(channel, "You can't do that, I can't play in private calls.")
             return
         }
-        if (!memberHasManageGuild(msg.member)) {
-            c.createMessage(channel, "You can't do that, gotta have the 'manage server' permission.")
-            return
-        }
+        if (!memberHasManageGuild(msg.member)) return
         let member = msg.member
         let channelId = member.voiceState ? member.voiceState.channelID : null
         if (!channelId) {
@@ -132,10 +128,7 @@ c.on('messageCreate', (msg) => { // Commands 'n' shit
             c.createMessage(channel, "You can't do that, I can't play in private calls.")
             return
         }
-        if (!memberHasManageGuild(msg.member)) {
-            c.createMessage(channel, "You can't do that, gotta have the 'manage server' permission.")
-            return
-        }
+        if (!memberHasManageGuild(msg.member)) return
         var newPrefix = content.replace(/prefix ([\s\S]*)/, "$1")
         if (/[a-zA-Z0-9\s\n]/.test(newPrefix)) {
             c.createMessage(channel, "Invalid prefix. Can't be a letter, number, or whitespace character.")
@@ -143,8 +136,68 @@ c.on('messageCreate', (msg) => { // Commands 'n' shit
         }
         writeGuildConfig(guild, {prefix: newPrefix})
         c.createMessage(channel, '\\o/')
-    } else if (content.startsWith('np') || content.startsWith('nowplaying') || content.startsWith('playing')) { //lol
+    } else if (content === 'ignore') {
+        // Ignore command - ignores user commands in this channel
+        // Requires manage server; can't be used in PM
+        if (isPrivate) {
+            c.createMessage(channel, "You can't do that, I can't play in private calls.")
+            return
+        }
+        if (!memberHasManageGuild(msg.member)) return
+        var denied = getGuildConfig(guild, 'denied')
+        if (!denied.includes(channel)) {
+            denied.push(channel)
+            writeGuildConfig(guild, {denied: denied})
+            c.createMessage(channel, "All right, I'll ignore this channel now.")
+        } else {
+            c.createMessage(channel, "I'm already ignoring this channel.")
+            return
+        }
+    } else if (content === 'unignore') {
+        // Unignore command - Stops ignoring user commands in this channel
+        // Requires manage server; can't be used in PM
+        if (isPrivate) {
+            c.createMessage(channel, "You can't do that, I can't play in private calls.")
+            return
+        }
+        if (!memberHasManageGuild(msg.member)) return
+        var denied = getGuildConfig(guild, 'denied')
+        if (denied.includes(channel)) {
+            denied.splice(denied.indexOf(channel), 1)
+            writeGuildConfig(guild, {denied: denied})
+            c.createMessage(channel, "Got it! I'll stop ignoring this channel.")
+        } else {
+            c.createMessage(channel, "I wasn't ignoring this channel.")
+            return
+        }
+    } else if (content === 'ignoreall') {
+        // Ignore all command - Ignores all text channels in a guild
+        // Requires manage server; can't be used in PM
+        if (isPrivate) {
+            c.createMessage(channel, "You can't do that, I can't play in private calls.")
+            return
+        }
+        if (!memberHasManageGuild(msg.member)) return
+        var denied = []
+        let guildObj = c.guilds.find(g => g.id === guild)
+        let textChannelIds = guildObj.channels.filter(c => c.type == 0).map(c => c.id)
+        textChannelIds.forEach(c => denied.push(c))
+        writeGuildConfig(guild, {denied: denied})
+        c.createMessage(channel, "I'm now ignoring every channel in the server.")
+    } else if (content === 'unignoreall') {
+        // Unignore all command - stops ignoring all text channels
+        // Requires manage server; can't be used in PM
+        if (isPrivate) {
+            c.createMessage(channel, "You can't do that, I can't play in private calls.")
+            return
+        }
+        if (!memberHasManageGuild(msg.member)) return
+        writeGuildConfig(guild, {denied: []})
+        c.createMessage(channel, "I'm no longer ignoring any channels here.")
+    } else if (content === 'np' || content === 'nowplaying' || content === 'playing') { //lol
         // Now playing - Returns info about the currently playing song
+        // Obeys channel ignores
+        if (getGuildConfig(guild, 'denied').includes(channel)) return // Do nothing if this channel is ignored
         getSongInfo((err, info) => {
             if (!err) {
                 c.createMessage(channel, `**Now playing:** "${info.song_name}" by ${info.artist_name}\n${
