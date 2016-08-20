@@ -4,7 +4,14 @@ let request = require('request')
 let reload = require('require-reload')(require)
 
 let config = require('./config.json')
-let guilds = reload('./guilds.json')
+
+// If the guilds file doesn't exist, we need to create it before we can use it
+try {
+    fs.accessSync('guilds.json', fs.F_OK) // Try to access the file
+} catch (e) { // The file isn't there
+    fs.writeFileSync('guilds.json', '{}', 'utf-8') // Create the file with a blank object
+}
+let guilds = reload('./guilds.json') // Now that the file definitely exists, we're safe to require it
 
 let c = new Eris.Client(config.token)
 
