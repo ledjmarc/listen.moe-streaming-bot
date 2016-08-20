@@ -1,8 +1,8 @@
 # listen.moe music streaming Discord bot
 
-[![Code Climate](https://codeclimate.com/github/Geo1088/listen.moe-streaming-bot/badges/gpa.svg)](https://codeclimate.com/github/Geo1088/listen.moe-streaming-bot)
+![status: fabulous](https://img.shields.io/badge/status-fabulous-ff69b4.svg) [![Code Climate](https://codeclimate.com/github/Geo1088/listen.moe-streaming-bot/badges/gpa.svg)](https://codeclimate.com/github/Geo1088/listen.moe-streaming-bot)
 
-A bot that streams music from [listen.moe](http://listen.moe) into your Discord channel.
+A bot that streams music from [listen.moe](http://listen.moe) into your Discord channel. [Add it to your server here!](https://discordapp.com/oauth2/authorize?&client_id=215888866215723008&scope=bot)
 
 ## Usage
 
