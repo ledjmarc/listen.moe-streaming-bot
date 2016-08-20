@@ -15,10 +15,16 @@ let guilds = reload('./guilds.json') // Now that the file definitely exists, we'
 
 let c = new Eris.Client(config.token)
 
-function joinVoice (client, channel) { // Join a voice channel and start playing the stream there
-    client.joinVoiceChannel(channel).then(vc => { // Join
-        vc.playStream(request(config.stream)) // Play
-    })
+function joinVoice (client, guild, channel) { // Join a voice channel and start playing the stream there
+    cc = client.voiceConnections.find(vc => vc.id === guild)
+    if (cc) {
+        cc.switchChannel(channel) // Just switch the channel for this connection
+    } else {
+        client.joinVoiceChannel(channel).then(vc => { // Join
+            vc.on('error', console.log)
+            vc.playStream(request(config.stream)) // Play
+        })
+    }
 }
 
 function setGuildChannel (client, guild, channel) { // Record a channel for the server
@@ -72,7 +78,7 @@ c.on('ready', () => {
     // (I could get into an argument about relative usefulness here but I'll leave that for another unnecessary comment)
     for (let guild of Object.keys(guilds)) { // loop through all the servers recorded
         let channel = guilds[guild].vc // Get the channel for this guild
-        if (channel) joinVoice(c, channel) // Connect and play if there's one set
+        if (channel) joinVoice(c, guild, channel) // Connect and play if there's one set
     }
 })
 
@@ -93,7 +99,7 @@ c.on('messageCreate', (msg) => { // Commands 'n' shit
         } else {
             // oh dang hello
             setGuildChannel(c, msg.channel.guild.id, channelId)
-            joinVoice(c, channelId)
+            joinVoice(c, msg.channel.guild.id, channelId)
             c.createMessage(msg.channel.id, '\\o/')
         }
     } else if (msg.content.startsWith("~~np") || msg.content.startsWith("~~nowplaying") || msg.content.startsWith("~~playing")) { //lol
