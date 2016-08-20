@@ -34,9 +34,9 @@ function getSongInfo (callback) { // Get the stream's info for the current song
     request(config.streamInfo, (err, res, body) => {
         try { body = JSON.parse(body) } catch (e) { err = e }
         if (!err) { // \o/
-            callback(null, body)
+            return callback(null, body)
         } else { // shit
-            callback(err)
+            return callback(err)
         }
     })
 }
