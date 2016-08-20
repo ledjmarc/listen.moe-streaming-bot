@@ -32,7 +32,7 @@ function writeGuildConfig (guild, object) { // Change a guild's config via an ob
     var newConfig = merge(currentConfig, object) // Merge new options with current
     var _guilds = guilds
     _guilds[guild] = newConfig // Write this new config back to the config
-    fs.writeFile('guilds.json', JSON.stringify(_guilds, null, 4), 'utf-8', err => { // Store the new stuff in the file
+    fs.writeFile('guilds.json', JSON.stringify(_guilds), 'utf-8', err => { // Store the new stuff in the file
         if (err) console.log(err)
         else guilds = reload('./guilds.json') // Reload the file
     })
