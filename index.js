@@ -100,7 +100,7 @@ c.on('messageCreate', (msg) => { // Commands 'n' shit
     let prefix = getGuildConfig(guild, 'prefix')
     console.log(prefix)
 
-    if (!content.startsWith(prefix)) return; // If prefix isn't matched, throw out the message
+    if (!content.startsWith(prefix)) return // If prefix isn't matched, throw out the message
     content = content.substr(prefix.length)
 
     if (content.startsWith('join')) {
@@ -109,7 +109,7 @@ c.on('messageCreate', (msg) => { // Commands 'n' shit
         if (isPrivate) {
             c.createMessage(channel, "You can't do that, I can't play in private calls.")
             return
-        };
+        }
         if (!memberHasManageGuild(msg.member)) {
             c.createMessage(channel, "You can't do that, gotta have the 'manage server' permission.")
             return
@@ -131,7 +131,7 @@ c.on('messageCreate', (msg) => { // Commands 'n' shit
         if (isPrivate) {
             c.createMessage(channel, "You can't do that, I can't play in private calls.")
             return
-        };
+        }
         if (!memberHasManageGuild(msg.member)) {
             c.createMessage(channel, "You can't do that, gotta have the 'manage server' permission.")
             return
