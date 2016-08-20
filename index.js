@@ -54,7 +54,7 @@ c.on('ready', () => {
         if (useSongName) {
             getSongInfo((err, body) => {
                 if (!err) {
-                    c.editGame({name: `${body.artist} // ${body.song}`})
+                    c.editGame({name: `${body.artist_name} // ${body.song_name}`})
                 } else {
                     c.editGame({name: 'music probably'})
                 }
@@ -100,8 +100,8 @@ c.on('messageCreate', (msg) => { // Commands 'n' shit
         // Now playing - Returns info about the currently playing song
         getSongInfo((err, info) => {
             if (!err) {
-                c.createMessage(msg.channel.id, `**Now playing:** "${info.song}" by ${info.artist}\n${
-                    info.request ? `**Requested by:** ${info.request} (<https://forum.listen.moe/u/${info.request}>)` : ''
+                c.createMessage(msg.channel.id, `**Now playing:** "${info.song_name}" by ${info.artist_name}\n${
+                    info.request ? `**Requested by:** ${info.requested_by} (<https://forum.listen.moe/u/${info.requested_by}>)` : ''
                     //3deep5me
                     // seriously though there's gotta be a better way to do this shit
                 }`)
