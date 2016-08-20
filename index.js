@@ -1,6 +1,7 @@
 let Eris = require('eris')
 let fs = require('fs')
 let request = require('request')
+let merge = require('merge')
 let reload = require('require-reload')(require)
 
 let config = require('./config.json')
@@ -26,13 +27,22 @@ function joinVoice (client, guild, channel) { // Join a voice channel and start 
     }
 }
 
-function setGuildChannel (client, guild, channel) { // Record a channel for the server
-    var _guilds = guilds // get current config
-    _guilds[guild] = _guilds[guild] || {} // create server config if it doesn't already exist
-    _guilds[guild].vc = channel // set the channel for this server in the new config
-    fs.writeFile('guilds.json', JSON.stringify(_guilds, null, 4), 'utf-8', err => { // write the config file with the new data
+function writeGuildConfig (guild, object) { // Change a guild's config via an object of options, and save the changes
+    var currentConfig = guilds[guild] || {} // Get gurrent config for this guild, creating it if it doesn't exist
+    var newConfig = merge(currentConfig, object) // Merge new options with current
+    var _guilds = guilds
+    _guilds[guild] = newConfig // Write this new config back to the config
+    fs.writeFile('guilds.json', JSON.stringify(_guilds, null, 4), 'utf-8', err => { // Store the new stuff in the file
         if (err) console.log(err)
+        else guilds = reload('./guilds.json') // Reload the file
     })
+}
+
+function getGuildConfig (guild, option) { // Get a config option from a guild
+    let defaults = config.guildDefaults // Grab the defaults, just in case
+    if (!guilds[guild]) return defaults[option]
+    else if (!guilds[guild][option]) return defaults[option]
+    else return guilds[guild][option] // logic whee
 }
 
 function getSongInfo (callback) { // Get the stream's info for the current song
@@ -82,12 +92,26 @@ c.on('ready', () => {
 })
 
 c.on('messageCreate', (msg) => { // Commands 'n' shit
-    if (!msg.channel.guild) return // throw out PMs
-    if (msg.content.startsWith("~~join")) {
+    var content = msg.content
+    let channel = msg.channel.id
+    let guild = msg.channel.guild
+    let isPrivate = guild ? false : true
+    if (!isPrivate) guild = guild.id
+    let prefix = getGuildConfig(guild, 'prefix')
+    console.log(prefix)
+
+    if (!content.startsWith(prefix)) return; // If prefix isn't matched, throw out the message
+    content = content.substr(prefix.length)
+
+    if (content.startsWith('join')) {
         // Join command - joins the VC the user is in, and sets that as the music channel for the server
-        // Requires manage server
+        // Requires manage server; can't be used in PM
+        if (isPrivate) {
+            c.createMessage(channel, "You can't do that, I can't play in private calls.")
+            return
+        };
         if (!memberHasManageGuild(msg.member)) {
-            c.createMessage(msg.channel.id, "You can't do that, gotta have the 'manage server' permission.")
+            c.createMessage(channel, "You can't do that, gotta have the 'manage server' permission.")
             return
         }
         let member = msg.member
@@ -97,15 +121,33 @@ c.on('messageCreate', (msg) => { // Commands 'n' shit
             c.createMessage(msg.channel.id, 'Join a voice channel first!')
         } else {
             // oh dang hello
-            setGuildChannel(c, msg.channel.guild.id, channelId)
-            joinVoice(c, msg.channel.guild.id, channelId)
-            c.createMessage(msg.channel.id, '\\o/')
+            writeGuildConfig(guild, {vc: channelId})
+            joinVoice(c, guild, channelId)
+            c.createMessage(channel, '\\o/')
         }
-    } else if (msg.content.startsWith("~~np") || msg.content.startsWith("~~nowplaying") || msg.content.startsWith("~~playing")) { //lol
+    } else if (content.startsWith('prefix')) {
+        // Prefix command - Change's the bot's prefix in the server
+        // Requires manage server; can't be used in PM
+        if (isPrivate) {
+            c.createMessage(channel, "You can't do that, I can't play in private calls.")
+            return
+        };
+        if (!memberHasManageGuild(msg.member)) {
+            c.createMessage(channel, "You can't do that, gotta have the 'manage server' permission.")
+            return
+        }
+        var newPrefix = content.replace(/prefix ([\s\S]*)/, "$1")
+        if (/[a-zA-Z0-9\s\n]/.test(newPrefix)) {
+            c.createMessage(channel, "Invalid prefix. Can't be a letter, number, or whitespace character.")
+            return
+        }
+        writeGuildConfig(guild, {prefix: newPrefix})
+        c.createMessage(channel, '\\o/')
+    } else if (content.startsWith('np') || content.startsWith('nowplaying') || content.startsWith('playing')) { //lol
         // Now playing - Returns info about the currently playing song
         getSongInfo((err, info) => {
             if (!err) {
-                c.createMessage(msg.channel.id, `**Now playing:** "${info.song_name}" by ${info.artist_name}\n${
+                c.createMessage(channel, `**Now playing:** "${info.song_name}" by ${info.artist_name}\n${
                     info.request ? `**Requested by:** ${info.requested_by} (<https://forum.listen.moe/u/${info.requested_by}>)` : ''
                     //3deep5me
                     // seriously though there's gotta be a better way to do this shit
