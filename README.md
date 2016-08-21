@@ -18,7 +18,7 @@ This list assumes a prefix of `~~`.
   Type this while in a voice channel to have the bot join that channel and start playing there. Limited to users with the "manage server" permission.
 
 - `~~nowplaying`, `~~playing`, `~~np`  
-  Gets the currently playing song and artist. If the song was requested by someone, also gives their name and a link to their profile on forums.listen.moe.
+  Gets the currently playing song and artist. If the song was requested by someone, also gives their name and a link to their profile on forum.listen.moe.
 
 - `~~ignore`  
   Ignores commands in the current channel. Admin commands are exempt from the ignore.
