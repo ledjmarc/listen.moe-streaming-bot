@@ -46,7 +46,9 @@ function getGuildConfig (guild, option) { // Get a config option from a guild
 }
 
 function getSongInfo (callback) { // Get the stream's info for the current song
-    request(config.streamInfo, (err, res, body) => {
+    request({url: config.streamInfo, headers: {
+        'User-Agent': 'Odyssey Radio Discord bot/1.0 (https://github.com/Geo1088/listen.moe-streaming-bot)'
+    }}, (err, res, body) => {
         try { body = JSON.parse(body) } catch (e) { err = e }
         if (!err) { // \o/
             return callback(null, body)
