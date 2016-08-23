@@ -22,7 +22,7 @@ function joinVoice (client, guild, channel) { // Join a voice channel and start 
         cc.switchChannel(channel) // Just switch the channel for this connection
     } else { // Looks like we'll need to make a new one
         client.joinVoiceChannel(channel).then(vc => { // Join
-            vc.playStream(request(config.stream)) // Play
+            vc.playStream(request(config.stream, {headers: {'User-Agent': config.ua}})) // Play
         })
     }
 }
@@ -46,9 +46,7 @@ function getGuildConfig (guild, option) { // Get a config option from a guild
 }
 
 function getSongInfo (callback) { // Get the stream's info for the current song
-    request({url: config.streamInfo, headers: {
-        'User-Agent': 'Odyssey Radio Discord bot/1.0 (https://github.com/Geo1088/listen.moe-streaming-bot)'
-    }}, (err, res, body) => {
+    request(config.streamInfo, {headers: {'User-Agent': config.ua}}, (err, res, body) => {
         try { body = JSON.parse(body) } catch (e) { err = e }
         if (!err) { // \o/
             return callback(null, body)
