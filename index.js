@@ -16,7 +16,7 @@ try {
 let guilds = reload('./guilds.json') // Now that the file definitely exists, we're safe to require it
 
 let c = new Eris.Client(config.token)
-let stream
+var stream // This is set in on('ready'
 
 // The following two functions have been taken and modified slightly from abalabahaha/Eris. Credit goes to them.
 function pickCommand () {
@@ -30,7 +30,7 @@ function pickCommand () {
 
 function loadStream (url, ua) { // Loads a network stream as a PCM stream
     let converterCommand = pickCommand()
-	
+
     let encoder = childProcess.spawn(converterCommand, [
         "-analyzeduration", "0",
         "-vn",
@@ -38,7 +38,7 @@ function loadStream (url, ua) { // Loads a network stream as a PCM stream
         "-i", url,
         "-f", "s16le",
         "-ar", "48000",
-		"-headers", "'User Agent: \"" + ua + "\"'",
+        "-headers", "'User Agent: \"" + ua + "\"'",
         "pipe:1"
     ], {
         stdio: ["pipe", "pipe", "pipe"]
@@ -76,7 +76,7 @@ function joinVoice (client, guild, channel) { // Join a voice channel and start 
     if (cc) { // If there is one
         cc.switchChannel(channel) // Just switch the channel for this connection
     } else { // Looks like we'll need to make a new one
-        client.joinVoiceChannel(channel).then((vc) => { // Join
+        client.joinVoiceChannel(channel).then(vc => { // Join
 			vc.playRawStream(stream, { inlineVolume: true })
         })
     }
@@ -115,8 +115,8 @@ function memberHasManageGuild (member) { // Return whether or not the user can m
     return member.permission.json.manageGuild
 }
 
-c.on('ready', () => {
-	stream = loadStream(config.stream, config.ua)
+c.once('ready', () => {
+    stream = loadStream(config.stream, config.ua)
     console.log(`Connected as ${c.user.username} / Currently in ${c.guilds.size} servers`)
 
     // This code has no practical value, but it's fun so w/e

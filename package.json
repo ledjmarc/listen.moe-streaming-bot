@@ -1,9 +1,8 @@
 {
   "dependencies": {
-    "eris": "github:abalabahaha/eris#dev",
+    "eris": "^0.3.0",
     "merge": "^1.2.0",
     "request": "^2.74.0",
-    "require-reload": "^0.2.2",
-	"child_process": "^1.0.2"
+    "require-reload": "^0.2.2"
   }
 }
