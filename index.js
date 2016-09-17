@@ -69,7 +69,6 @@ function memberHasManageGuild (member) { // Return whether or not the user can m
 
 c.on('ready', () => {
 	streamHelper = new StreamHelper(config.stream, config.ua)
-	
     console.log(`Connected as ${c.user.username} / Currently in ${c.guilds.size} servers`)
 
     // This code has no practical value, but it's fun so w/e
