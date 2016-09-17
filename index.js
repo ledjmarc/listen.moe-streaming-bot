@@ -67,7 +67,7 @@ function memberHasManageGuild (member) { // Return whether or not the user can m
     return member.permission.json.manageGuild
 }
 
-c.on('ready', () => {
+c.once('ready', () => {
 	streamHelper = new StreamHelper(config.stream, config.ua)
     console.log(`Connected as ${c.user.username} / Currently in ${c.guilds.size} servers`)
 
