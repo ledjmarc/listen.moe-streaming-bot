@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "eris": "github:abalabahaha/eris#dev",
+    "eris": "github:abalabahaha/eris",
     "merge": "^1.2.0",
     "request": "^2.74.0",
     "require-reload": "^0.2.2",
