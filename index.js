@@ -24,7 +24,7 @@ function joinVoice (client, guild, channel) { // Join a voice channel and start 
     if (cc) { // If there is one
         cc.switchChannel(channel) // Just switch the channel for this connection
     } else { // Looks like we'll need to make a new one
-        client.joinVoiceChannel(channel).then((vc) => { // Join
+        client.joinVoiceChannel(channel).then(vc => { // Join
 			if (!streamHelper.containsVoiceConnection(vc)) {
 				streamHelper.addVoiceConnection(vc)
 				if (!streamHelper.playing)
