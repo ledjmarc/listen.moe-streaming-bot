@@ -3,9 +3,10 @@ let fs = require('fs')
 let request = require('request')
 let merge = require('merge')
 let reload = require('require-reload')(require)
-let childProcess = require('child_process')
+let StreamHelper = require('./StreamHelper')
 
 let config = require('./config.json')
+let streamHelper
 
 // If the guilds file doesn't exist, we need to create it before we can use it
 try {
@@ -16,60 +17,7 @@ try {
 let guilds = reload('./guilds.json') // Now that the file definitely exists, we're safe to require it
 
 let c = new Eris.Client(config.token)
-var stream // This is set in on('ready'
 
-// The following two functions have been taken and modified slightly from abalabahaha/Eris. Credit goes to them.
-function pickCommand () {
-    for (let command of ["./ffmpeg", "./avconv", "ffmpeg", "avconv"]) {
-        if(!childProcess.spawnSync(command, ["-h"]).error) {
-            return command
-        }
-    }
-    throw new Error("Neither ffmpeg nor avconv was found. Make sure you install either one, and check that it is in your PATH")
-}
-
-function loadStream (url, ua) { // Loads a network stream as a PCM stream
-    let converterCommand = pickCommand()
-
-    let encoder = childProcess.spawn(converterCommand, [
-        "-analyzeduration", "0",
-        "-vn",
-        "-loglevel", "0",
-        "-i", url,
-        "-f", "s16le",
-        "-ar", "48000",
-        "-headers", "'User Agent: \"" + ua + "\"'",
-        "pipe:1"
-    ], {
-        stdio: ["pipe", "pipe", "pipe"]
-    })
-
-    let killEncoder = (e) => {
-        console.log("Encoder died for some reason...")
-        let after = () => {
-            if((e instanceof Error)) {
-                this.emit("error", e)
-            }
-        }
-
-        if(encoder.killed) {
-            after()
-        } else {
-            encoder.once("exit", after)
-            encoder.kill()
-        }
-    }
-
-    encoder.stderr.on("data", (e) => {
-        this.emit("error", new Error("Encoder error: " + String(e)))
-    })
-
-    encoder.once("exit", killEncoder)
-    encoder.stdin.once("error", killEncoder)
-    encoder.stdout.once("error", killEncoder)
-
-    return encoder.stdout
-}
 
 function joinVoice (client, guild, channel) { // Join a voice channel and start playing the stream there
     cc = client.voiceConnections.find(vc => vc.id === guild) // Find a current connection in this guild
@@ -77,7 +25,11 @@ function joinVoice (client, guild, channel) { // Join a voice channel and start 
         cc.switchChannel(channel) // Just switch the channel for this connection
     } else { // Looks like we'll need to make a new one
         client.joinVoiceChannel(channel).then(vc => { // Join
-			vc.playRawStream(stream, { inlineVolume: true })
+			if (!streamHelper.containsVoiceConnection(vc)) {
+				streamHelper.addVoiceConnection(vc)
+				if (!streamHelper.playing)
+					streamHelper.playStream()
+			}
         })
     }
 }
@@ -116,7 +68,7 @@ function memberHasManageGuild (member) { // Return whether or not the user can m
 }
 
 c.once('ready', () => {
-    stream = loadStream(config.stream, config.ua)
+	streamHelper = new StreamHelper(config.stream, config.ua)
     console.log(`Connected as ${c.user.username} / Currently in ${c.guilds.size} servers`)
 
     // This code has no practical value, but it's fun so w/e
