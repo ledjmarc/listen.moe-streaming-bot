@@ -68,10 +68,18 @@ function memberHasManageGuild (member) { // Return whether or not the user can m
 
 c.once('ready', () => {
     streamHelper = new StreamHelper(config.stream, config.ua)
-    streamHelper.on("error", (e) => {
-        console.log("StreamHelper died! " + e)
+    let errorHandler = (e) => {
+        console.log("StreamHelper died!")
+        if (e) {
+            if (typeof e === 'string')
+                console.log(e)
+            else
+                console.log(JSON.stringify(e))
+        }
         process.exit(1) // Kill ourself if the stream died, so our process monitor can restart us
-    })
+    }
+    streamHelper.on("error", errorHandler)
+    streamHelper.on("end", errorHandler)
     console.log(`Connected as ${c.user.username} / Currently in ${c.guilds.size} servers`)
 
     // This code has no practical value, but it's fun so w/e
