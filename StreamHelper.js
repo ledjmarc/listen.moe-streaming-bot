@@ -232,7 +232,6 @@ class StreamHelper extends EventEmitter {
                 this.incrementTimestamps(this.frameSize)
 				this.incrementSequences()
                 
-
                 buffer = opusBufferGenerator(source)
                 if(!buffer && (voiceDataTimeout === -1 || waitingForData <= voiceDataTimeout / this.frameDuration)) { // wait for data
                     if(++waitingForData <= 5) {
@@ -244,7 +243,7 @@ class StreamHelper extends EventEmitter {
                         return setTimeout(send, 2 * this.frameDuration)
                     }
                 } else if (!buffer) {
-					//If we still have no buffer data after voiceDataTimeout, just dc
+					// If we still have no buffer data after voiceDataTimeout, just dc
                     for(var i = 1; i <= 5; ++i) {
 						this.incrementTimestamps(this.frameSize)
 						this.incrementSequences()
@@ -262,20 +261,16 @@ class StreamHelper extends EventEmitter {
                     this.setSpeaking(true)
                 }
 
-				let success = true
-				for (let vcIndex = 0; vcIndex < this.voiceConnections.length; vcIndex++) {
+				// Push packet to all VoiceConnections
+				for (let vcIndex = this.voiceConnections.length - 1; vcIndex >= 0; vcIndex--) {
 					let vc = this.voiceConnections[vcIndex]
 					if (!vc.sendPacket(vc.createPacket(buffer))) {
-						console.log(":(")
-						success = false
+						console.log(":( - Disconnected from " + vc.id)
+						this.voiceConnections.splice(vcIndex, 1)
 					}
 				}
 				
-                if(success) {
-                    return setTimeout(send, startTime + pausedTime + ++packets * this.frameDuration - Date.now())
-                }
-
-                tellEnd()
+				return setTimeout(send, startTime + pausedTime + ++packets * this.frameDuration - Date.now())
             } catch(e) {
                 this.emit("error", e)
                 tellEnd()

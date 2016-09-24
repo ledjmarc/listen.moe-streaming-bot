@@ -25,10 +25,10 @@ function joinVoice (client, guild, channel) { // Join a voice channel and start 
         cc.switchChannel(channel) // Just switch the channel for this connection
     } else { // Looks like we'll need to make a new one
         client.joinVoiceChannel(channel).then(vc => { // Join
-        if (!streamHelper.containsVoiceConnection(vc)) {
-			streamHelper.addVoiceConnection(vc)
-			if (!streamHelper.playing) streamHelper.playStream()
-			}
+            if (vc && !streamHelper.containsVoiceConnection(vc)) {
+                streamHelper.addVoiceConnection(vc)
+                if (!streamHelper.playing) streamHelper.playStream()
+            }
         })
     }
 }
@@ -68,6 +68,10 @@ function memberHasManageGuild (member) { // Return whether or not the user can m
 
 c.once('ready', () => {
     streamHelper = new StreamHelper(config.stream, config.ua)
+    streamHelper.on("error", (e) => {
+        console.log("StreamHelper died! " + e)
+        process.exit(1) // Kill ourself if the stream died, so our process monitor can restart us
+    })
     console.log(`Connected as ${c.user.username} / Currently in ${c.guilds.size} servers`)
 
     // This code has no practical value, but it's fun so w/e
