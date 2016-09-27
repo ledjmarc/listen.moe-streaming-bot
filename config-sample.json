@@ -2,7 +2,7 @@
     "token": "Bot's token",
     "stream": "http://listen.moe:9999/stream",
     "streamInfo": "http://listen.moe/stats.json",
-    "ua": "Odyssey Radio Discord bot/1.0 (https://github.com/Geo1088/listen.moe-streaming-bot)",
+    "ua": "Odyssey Radio Discord bot/1.1.0 (https://github.com/Geo1088/listen.moe-streaming-bot)",
     "gameInterval": 15000,
     "separator": "-",
     "owners": [
