@@ -18,19 +18,27 @@ let guilds = reload('./guilds.json') // Now that the file definitely exists, we'
 
 let c = new Eris.Client(config.token)
 
-
 function joinVoice (client, guild, channel) { // Join a voice channel and start playing the stream there
-    cc = client.voiceConnections.find(vc => vc.id === guild) // Find a current connection in this guild
+    let cc = client.voiceConnections.find(vc => vc.id === guild) // Find a current connection in this guild
     if (cc) { // If there is one
-        cc.switchChannel(channel) // Just switch the channel for this connection
+        // Just switch the channel for this connection
+        cc.switchChannel(channel)
+        // Config thing
+        writeGuildConfig(guild, {vc: channel})
     } else { // Looks like we'll need to make a new one
-        client.joinVoiceChannel(channel).then(vc => { // Join
+        // Create a new voice connection and join the channel
+        client.joinVoiceChannel(channel).then(vc => {
+            // Make sure the channel exists, and that it isn't already being managed by the thing
+            // If the channel is already managed by the stream helper, you're gonna have a bad time
             if (vc && !streamHelper.containsVoiceConnection(vc)) {
+                // Have the stream helper start managing this VC and play the thing
                 streamHelper.addVoiceConnection(vc)
                 if (!streamHelper.playing) streamHelper.playStream()
             }
         })
     }
+    
+    // wew that was a lot of comments
 }
 
 function writeGuildConfig (guild, object) { // Change a guild's config via an object of options, and save the changes
@@ -46,19 +54,17 @@ function writeGuildConfig (guild, object) { // Change a guild's config via an ob
 
 function getGuildConfig (guild, option) { // Get a config option from a guild
     let defaults = config.guildDefaults // Grab the defaults, just in case
-    if (!guilds[guild]) return defaults[option]
-    else if (!guilds[guild][option]) return defaults[option]
-    else return guilds[guild][option] // logic whee
+    if (!guilds[guild] || !guilds[guild][option]) return defaults[option] // logic whee
+    return guilds[guild][option]
 }
 
 function getSongInfo (callback) { // Get the stream's info for the current song
     request(config.streamInfo, {headers: {'User-Agent': config.ua}}, (err, res, body) => {
         try { body = JSON.parse(body) } catch (e) { err = e }
-        if (!err) { // \o/
-            return callback(null, body)
-        } else { // shit
-            return callback(err)
-        }
+        // \o/
+        if (!err) return callback(null, body)
+        // shit
+        return callback(err)
     })
 }
 
@@ -77,9 +83,11 @@ c.once('ready', () => {
                 console.log(JSON.stringify(e))
         }
         process.exit(1) // Kill ourself if the stream died, so our process monitor can restart us
+        // hey anon suicide is bad okay
     }
     streamHelper.on("error", errorHandler)
     streamHelper.on("end", errorHandler)
+
     console.log(`Connected as ${c.user.username} / Currently in ${c.guilds.size} servers`)
 
     // This code has no practical value, but it's fun so w/e
@@ -90,7 +98,8 @@ c.once('ready', () => {
                 if (!err) {
                     c.editGame({name: `${body.artist_name} ${config.separator || '-'} ${body.song_name}`})
                 } else {
-                    c.editGame({name: 'music probably'})
+                    c.editGame({name: 'music probably'});
+                    console.log("Getting song info didn't work\n"+err)
                 }
             })
             useSongName = false // next update will not use this
@@ -105,7 +114,7 @@ c.once('ready', () => {
     // end useless code - begin code that does useful things
     // (I could get into an argument about relative usefulness here but I'll leave that for another unnecessary comment)
     for (let guild of Object.keys(guilds)) { // loop through all the servers recorded
-        let channel = guilds[guild].vc // Get the channel for this guild
+        let channel = getGuildConfig(guild, 'vc') // Get the channel for this guild
         if (channel) joinVoice(c, guild, channel) // Connect and play if there's one set
     }
 })
