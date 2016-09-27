@@ -227,7 +227,7 @@ c.on('messageCreate', (msg) => { // Commands 'n' shit
             }
         })
     } else if (content.startsWith('eval')) {
-        if (!config.owners.includes(msg.author.id)) return c.reply(msg, 'soz bae must be bot owner') // todo: stop using unnecessary todo lines that make lines way too long
+        if (!config.owners.includes(msg.author.id)) return c.createMessage(msg.channel.id, 'soz bae must be bot owner') // todo: stop using unnecessary todo lines that make lines way too long
         let toEval = content.replace(/eval ([\s\S]*)/, "$1")
         let thing
         try {
@@ -237,7 +237,7 @@ c.on('messageCreate', (msg) => { // Commands 'n' shit
         }
         c.createMessage(msg.channel.id, thing)
     } else if (content === 'servers') {
-        if (!config.owners.includes(msg.author.id)) return c.reply(msg, 'soz bae must be bot owner') // jkfhasdkjhfkajshdkfsf
+        if (!config.owners.includes(msg.author.id)) return c.createMessage(msg.channel.id, 'soz bae must be bot owner') // jkfhasdkjhfkajshdkfsf
         c.createMessage(msg.channel.id, c.guilds.map(g=>`\`${g.id}\` ${g.name}`).join('\n'))
     }
 })
