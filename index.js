@@ -88,7 +88,7 @@ c.once('ready', () => {
         if (useSongName) {
             getSongInfo((err, body) => {
                 if (!err) {
-                    c.editGame({name: `${body.artist_name} // ${body.song_name}`})
+                    c.editGame({name: `${body.artist_name} ${config.separator || '-'} ${body.song_name}`})
                 } else {
                     c.editGame({name: 'music probably'})
                 }
