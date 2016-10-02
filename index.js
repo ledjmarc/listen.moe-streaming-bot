@@ -33,11 +33,12 @@ function joinVoice (client, guild, channel) { // Join a voice channel and start 
             if (vc && !streamHelper.containsVoiceConnection(vc)) {
                 // Have the stream helper start managing this VC and play the thing
                 streamHelper.addVoiceConnection(vc)
+                console.log(`Added voice connection for guild ${guild.name} (${guild.id})`)
                 if (!streamHelper.playing) streamHelper.playStream()
             }
         })
     }
-    
+
     // wew that was a lot of comments
 }
 

@@ -17,7 +17,7 @@ const SILENCE = new Buffer([0xF8, 0xFF, 0xFE])
 class StreamHelper extends EventEmitter {
 	constructor(url, ua) {
 		super()
-		
+
 		this.samplingRate = 48000
         this.channels = 2
         this.frameDuration = 60
@@ -33,9 +33,9 @@ class StreamHelper extends EventEmitter {
             this.opus = new OpusScript(this.samplingRate, this.channels, OpusScript.Application.AUDIO)
             this.opus.setBitrate(this.bitrate)
         }
-		
+
 		this.stream = this.loadStream(url, ua)
-		
+
 		this.volumeTransformer.attach(this.stream)
 		this.stream = this.volumeTransformer
 
@@ -51,7 +51,7 @@ class StreamHelper extends EventEmitter {
 
 		this.volumeTransformer.once("error", killStream)
 		this.volumeTransformer.once("unattach", killStream)
-		
+
 		this.nonce = new Buffer(24)
         this.nonce.fill(0)
 
@@ -59,14 +59,14 @@ class StreamHelper extends EventEmitter {
         this.packetBuffer.fill(0)
         this.packetBuffer[0] = 0x80
         this.packetBuffer[1] = 0x78
-		
+
 		this.playing = false
         this.sequence = 0
         this.timestamp = 0
-		
+
 		this.voiceConnections = []
 	}
-	
+
 	pickCommand() {
 		for (let command of ["./ffmpeg", "./avconv", "ffmpeg", "avconv"]) {
 			if(!childProcess.spawnSync(command, ["-h"]).error) {
@@ -75,7 +75,7 @@ class StreamHelper extends EventEmitter {
 		}
 		throw new Error("Neither ffmpeg nor avconv was found. Make sure you install either one, and check that it is in your PATH")
 	}
-	
+
 	containsVoiceConnection(vc) {
 		for (let i = 0; i < this.voiceConnections.length; i++) {
 			let otherVc = this.voiceConnections[i]
@@ -84,15 +84,14 @@ class StreamHelper extends EventEmitter {
 		}
 		return false
 	}
-	
+
 	addVoiceConnection(vc) {
-		console.log("Added vc: " + vc.id)
 		this.voiceConnections.push(vc)
 	}
-	
+
 	loadStream (url, ua) { // Loads a network stream as a PCM stream
 		let converterCommand = this.pickCommand()
-		
+
 		let encoder = childProcess.spawn(converterCommand, [
 			"-analyzeduration", "0",
 			"-vn",
@@ -132,13 +131,13 @@ class StreamHelper extends EventEmitter {
 
 		return encoder.stdout
 	}
-	
+
 	setSpeaking(val) {
 		for (let i = 0; i < this.voiceConnections.length; i++) {
 			this.voiceConnections[i].setSpeaking(val)
 		}
 	}
-	
+
 	playStream(options) {
 		this.playing = true
 		if(!this.opus) {
@@ -168,7 +167,7 @@ class StreamHelper extends EventEmitter {
             this.stream.once("readable", onReadable)
         }
 	}
-	
+
 	incrementTimestamps(val) {
 		for (let i = 0; i < this.voiceConnections.length; i++) {
 			let vc = this.voiceConnections[i]
@@ -178,7 +177,7 @@ class StreamHelper extends EventEmitter {
 			}
 		}
 	}
-	
+
 	incrementSequences() {
 		for (let i = 0; i < this.voiceConnections.length; i++) {
 			let vc = this.voiceConnections[i]
@@ -187,7 +186,7 @@ class StreamHelper extends EventEmitter {
 			}
 		}
 	}
-	
+
 	playRaw(source, opusBufferGenerator, options) {
         options = options || {}
 		console.log("Started playRaw")
@@ -217,7 +216,7 @@ class StreamHelper extends EventEmitter {
                     source.destroy()
                 }
             }
-			
+
             this.emit("end")
         }
 
@@ -231,7 +230,7 @@ class StreamHelper extends EventEmitter {
 
                 this.incrementTimestamps(this.frameSize)
 				this.incrementSequences()
-                
+
                 buffer = opusBufferGenerator(source)
                 if(!buffer && (voiceDataTimeout === -1 || waitingForData <= voiceDataTimeout / this.frameDuration)) { // wait for data
                     if(++waitingForData <= 5) {
@@ -254,7 +253,7 @@ class StreamHelper extends EventEmitter {
 							vc.sendPacket(vc.createPacket(SILENCE))
 						}
                     }
-					
+
                     return tellEnd()
                 } else {
                     waitingForData = 0
@@ -269,7 +268,7 @@ class StreamHelper extends EventEmitter {
 						this.voiceConnections.splice(vcIndex, 1)
 					}
 				}
-				
+
 				return setTimeout(send, startTime + pausedTime + ++packets * this.frameDuration - Date.now())
             } catch(e) {
                 this.emit("error", e)
