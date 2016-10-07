@@ -8,13 +8,13 @@ let StreamHelper = require('./StreamHelper')
 let config = require('./config.json')
 let streamHelper
 
-// If the guilds file doesn't exist, we need to create it before we can use it
+let guilds
 try {
-    fs.accessSync('guilds.json', fs.F_OK) // Try to access the file
-} catch (e) { // The file isn't there
-    fs.writeFileSync('guilds.json', '{}', 'utf-8') // Create the file with a blank object
+    guilds = reload('./guilds.json')
+} catch (e) {
+    console.log("BAD THING HAPPENED AND GUILDS.JSON DOESNT EXIST AAAAAAAA")
+    guilds = {}
 }
-let guilds = reload('./guilds.json') // Now that the file definitely exists, we're safe to require it
 
 let c = new Eris.Client(config.token)
 
@@ -48,6 +48,7 @@ function writeGuildConfig (guild, object) { // Change a guild's config via an ob
     var newConfig = merge(currentConfig, object) // Merge new options with current
     var _guilds = guilds
     _guilds[guild] = newConfig // Write this new config back to the config
+    fs.writeFile(`backups/guilds-${Date.now()}.json`, JSON.stringify(guilds)) // Create a backup before doing anything
     fs.writeFile('guilds.json', JSON.stringify(_guilds), 'utf-8', err => { // Store the new stuff in the file
         if (err) console.log(err)
         else guilds = reload('./guilds.json') // Reload the file
