@@ -28,9 +28,11 @@ function joinVoice (client, guild, channel) { // Join a voice channel and start 
         // Create a new voice connection and join the channel
         sharedStream.joinVoiceChannel(channel).then(vc => {
             if (vc) {
-				let realGuild = c.guilds.get(guild);
+                let realGuild = c.guilds.get(guild);
                 console.log(`Added voice connection for guild ${realGuild.name} (${realGuild.id})`)
             }
+        }, error => {
+            console.log(error)
         })
     }
 
@@ -42,8 +44,8 @@ function writeGuildConfig (guild, object) { // Change a guild's config via an ob
     var newConfig = merge(currentConfig, object) // Merge new options with current
     var _guilds = guilds
     _guilds[guild] = newConfig // Write this new config back to the config
-	if (!fs.existsSync('./backups'))
-		fs.mkdirSync('./backups')
+    if (!fs.existsSync('./backups'))
+        fs.mkdirSync('./backups')
     fs.writeFile(`backups/guilds-${Date.now()}.json`, JSON.stringify(guilds)) // Create a backup before doing anything
     fs.writeFile('guilds.json', JSON.stringify(_guilds), 'utf-8', err => { // Store the new stuff in the file
         if (err) console.log(err)
@@ -85,9 +87,9 @@ c.once('ready', () => {
     }
     sharedStream.on("error", errorHandler)
     sharedStream.on("end", errorHandler)
-	sharedStream.on("disconnect", (vc) => {
-		console.log(":( - Disconnected from " + vc.id);
-	});
+    sharedStream.on("disconnect", (vc) => {
+        console.log(":( - Disconnected from " + vc.id);
+    });
 
     console.log(`Connected as ${c.user.username} / Currently in ${c.guilds.size} servers`)
 
