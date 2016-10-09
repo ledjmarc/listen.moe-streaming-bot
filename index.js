@@ -42,6 +42,8 @@ function writeGuildConfig (guild, object) { // Change a guild's config via an ob
     var newConfig = merge(currentConfig, object) // Merge new options with current
     var _guilds = guilds
     _guilds[guild] = newConfig // Write this new config back to the config
+	if (!fs.existsSync('./backups'))
+		fs.mkdirSync('./backups')
     fs.writeFile(`backups/guilds-${Date.now()}.json`, JSON.stringify(guilds)) // Create a backup before doing anything
     fs.writeFile('guilds.json', JSON.stringify(_guilds), 'utf-8', err => { // Store the new stuff in the file
         if (err) console.log(err)
