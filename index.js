@@ -3,10 +3,8 @@ let fs = require('fs')
 let request = require('request')
 let merge = require('merge')
 let reload = require('require-reload')(require)
-let StreamHelper = require('./StreamHelper')
 
 let config = require('./config.json')
-let streamHelper
 
 let guilds
 try {
@@ -17,6 +15,7 @@ try {
 }
 
 let c = new Eris.Client(config.token)
+let sharedStream = c.createSharedStream(config.stream, config.ua)
 
 function joinVoice (client, guild, channel) { // Join a voice channel and start playing the stream there
     let cc = client.voiceConnections.find(vc => vc.id === guild) // Find a current connection in this guild
@@ -27,15 +26,10 @@ function joinVoice (client, guild, channel) { // Join a voice channel and start 
         writeGuildConfig(guild, {vc: channel})
     } else { // Looks like we'll need to make a new one
         // Create a new voice connection and join the channel
-        client.joinVoiceChannel(channel).then(vc => {
-            // Make sure the channel exists, and that it isn't already being managed by the thing
-            // If the channel is already managed by the stream helper, you're gonna have a bad time
-            if (vc && !streamHelper.containsVoiceConnection(vc)) {
-                // Have the stream helper start managing this VC and play the thing
-                streamHelper.addVoiceConnection(vc)
+        sharedStream.joinVoiceChannel(channel).then(vc => {
+            if (vc) {
 				let realGuild = c.guilds.get(guild);
                 console.log(`Added voice connection for guild ${realGuild.name} (${realGuild.id})`)
-                if (!streamHelper.playing) streamHelper.playStream()
             }
         })
     }
@@ -76,9 +70,8 @@ function memberHasManageGuild (member) { // Return whether or not the user can m
 }
 
 c.once('ready', () => {
-    streamHelper = new StreamHelper(config.stream, config.ua)
     let errorHandler = (e) => {
-        console.log("StreamHelper died!")
+        console.log("SharedStream died!")
         if (e) {
             if (typeof e === 'string')
                 console.log(e)
@@ -88,8 +81,11 @@ c.once('ready', () => {
         process.exit(1) // Kill ourself if the stream died, so our process monitor can restart us
         // hey anon suicide is bad okay
     }
-    streamHelper.on("error", errorHandler)
-    streamHelper.on("end", errorHandler)
+    sharedStream.on("error", errorHandler)
+    sharedStream.on("end", errorHandler)
+	sharedStream.on("disconnect", (vc) => {
+		console.log(":( - Disconnected from " + vc.id);
+	});
 
     console.log(`Connected as ${c.user.username} / Currently in ${c.guilds.size} servers`)
 
@@ -99,15 +95,15 @@ c.once('ready', () => {
         if (useSongName) {
             getSongInfo((err, body) => {
                 if (!err) {
-                    c.editGame({name: `${body.artist_name} ${config.separator || '-'} ${body.song_name}`})
+                    c.editStatus("online", {name: `${body.artist_name} ${config.separator || '-'} ${body.song_name}`})
                 } else {
-                    c.editGame({name: 'music probably'});
+                    c.editStatus("online", {name: 'music probably'});
                     console.log("Getting song info didn't work\n"+err)
                 }
             })
             useSongName = false // next update will not use this
         } else {
-            c.editGame({name: `on ${ c.guilds.size } servers`})
+            c.editStatus("online", {name: `on ${ c.guilds.size } servers`})
             useSongName = true // next update will use other thing
         }
     }
