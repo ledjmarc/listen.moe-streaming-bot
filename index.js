@@ -236,7 +236,7 @@ c.on('messageCreate', (msg) => { // Commands 'n' shit
                     //3deep5me
                     // seriously though there's gotta be a better way to do this shit
                 }${
-                    info.anime_name ? `\n**Source anime:** ${info.anime_name}` : ''
+                    info.anime_name ? `\n**Anime:** ${info.anime_name}` : ''
                     // yes
                 }`)
             }
