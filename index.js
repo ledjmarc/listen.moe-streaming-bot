@@ -175,7 +175,7 @@ c.on('messageCreate', (msg) => { // Commands 'n' shit
             return
         }
         if (!memberHasManageGuild(msg.member)) return
-        var denied = getGuildConfig(guild, 'denied')
+        let denied = getGuildConfig(guild, 'denied')
         if (!denied.includes(channel)) {
             denied.push(channel)
             writeGuildConfig(guild, {denied: denied})
@@ -192,7 +192,7 @@ c.on('messageCreate', (msg) => { // Commands 'n' shit
             return
         }
         if (!memberHasManageGuild(msg.member)) return
-        var denied = getGuildConfig(guild, 'denied')
+        let denied = getGuildConfig(guild, 'denied')
         if (denied.includes(channel)) {
             denied.splice(denied.indexOf(channel), 1)
             writeGuildConfig(guild, {denied: denied})
@@ -209,9 +209,9 @@ c.on('messageCreate', (msg) => { // Commands 'n' shit
             return
         }
         if (!memberHasManageGuild(msg.member)) return
-        var denied = []
+        let denied = []
         let guildObj = c.guilds.find(g => g.id === guild)
-        let textChannelIds = guildObj.channels.filter(c => c.type == 0).map(c => c.id)
+        let textChannelIds = guildObj.channels.filter(c => c.type === 0).map(c => c.id)
         textChannelIds.forEach(c => denied.push(c))
         writeGuildConfig(guild, {denied: denied})
         c.createMessage(channel, "I'm now ignoring every channel in the server.")
