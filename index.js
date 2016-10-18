@@ -10,7 +10,7 @@ let guilds
 try {
     guilds = reload('./guilds.json')
 } catch (e) {
-    console.log("BAD THING HAPPENED AND GUILDS.JSON DOESNT EXIST AAAAAAAA")
+    console.log('BAD THING HAPPENED AND GUILDS.JSON DOESNT EXIST AAAAAAAA')
     guilds = {}
 }
 
@@ -28,7 +28,7 @@ function joinVoice (client, guild, channel) { // Join a voice channel and start 
         // Create a new voice connection and join the channel
         sharedStream.joinVoiceChannel(channel).then(vc => {
             if (vc) {
-                let realGuild = c.guilds.get(guild);
+                let realGuild = c.guilds.get(guild)
                 console.log(`Added voice connection for guild ${realGuild.name} (${realGuild.id})`)
             }
         }, error => {
@@ -75,7 +75,7 @@ function memberHasManageGuild (member) { // Return whether or not the user can m
 
 c.once('ready', () => {
     let errorHandler = (e) => {
-        console.log("SharedStream died!")
+        console.log('SharedStream died!')
         if (e) {
             if (typeof e === 'string')
                 console.log(e)
@@ -85,11 +85,11 @@ c.once('ready', () => {
         process.exit(1) // Kill ourself if the stream died, so our process monitor can restart us
         // hey anon suicide is bad okay
     }
-    sharedStream.on("error", errorHandler)
-    sharedStream.on("end", errorHandler)
-    sharedStream.on("disconnect", (vc) => {
-        console.log(":( - Disconnected from " + vc.id);
-    });
+    sharedStream.on('error', errorHandler)
+    sharedStream.on('end', errorHandler)
+    sharedStream.on('disconnect', (vc) => {
+        console.log(':( - Disconnected from ' + vc.id)
+    })
 
     console.log(`Connected as ${c.user.username} / Currently in ${c.guilds.size} servers`)
 
@@ -99,7 +99,7 @@ c.once('ready', () => {
             if (!err) {
                 c.editStatus({name: `${body.artist_name} ${config.separator || '-'} ${body.song_name}`})
             } else {
-                c.editStatus({name: 'music probably'});
+                c.editStatus({name: 'music probably'})
                 console.log("Getting song info didn't work\n"+err)
             }
         })
@@ -173,7 +173,7 @@ c.on('messageCreate', (msg) => { // Commands 'n' shit
             return
         }
         if (!memberHasManageGuild(msg.member)) return
-        var newPrefix = content.replace(/prefix ([\s\S]*)/, "$1")
+        var newPrefix = content.replace(/prefix ([\s\S]*)/, '$1')
         if (/[a-zA-Z0-9\s\n]/.test(newPrefix)) {
             c.createMessage(channel, "Invalid prefix. Can't be a letter, number, or whitespace character.")
             return
@@ -256,7 +256,7 @@ c.on('messageCreate', (msg) => { // Commands 'n' shit
         })
     } else if (content.startsWith('eval')) {
         if (!config.owners.includes(msg.author.id)) return c.createMessage(msg.channel.id, 'soz bae must be bot owner') // todo: stop using unnecessary todo lines that make lines way too long
-        let toEval = content.replace(/eval ([\s\S]*)/, "$1")
+        let toEval = content.replace(/eval ([\s\S]*)/, '$1')
         let thing
         try {
             thing = eval(toEval) // eval is harmful my ass
