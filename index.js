@@ -119,7 +119,7 @@ c.once('ready', () => {
             // For every channel that is a voice channel and we're in
             g.channels.filter(d => d.voiceMembers ? d.voiceMembers.get('222167140004790273') : false).forEach(d => {
                 // Add the number of members in this channel, not counting ourself
-                thing += d.voiceMembers.size - 1
+                userCount += d.voiceMembers.size - 1
             })
         })
 
