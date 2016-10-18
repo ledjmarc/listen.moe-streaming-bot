@@ -94,25 +94,38 @@ c.once('ready', () => {
     console.log(`Connected as ${c.user.username} / Currently in ${c.guilds.size} servers`)
 
     // This code has no practical value, but it's fun so w/e
-    var useSongName = true
-    function updateGame () {
-        if (useSongName) {
-            getSongInfo((err, body) => {
-                if (!err) {
-                    c.editStatus("online", {name: `${body.artist_name} ${config.separator || '-'} ${body.song_name}`})
-                } else {
-                    c.editStatus("online", {name: 'music probably'});
-                    console.log("Getting song info didn't work\n"+err)
-                }
-            })
-            useSongName = false // next update will not use this
-        } else {
-            c.editStatus("online", {name: `on ${ c.guilds.size } servers`})
-            useSongName = true // next update will use other thing
-        }
+    function gameCurrentSong () {
+        getSongInfo((err, body) => {
+            if (!err) {
+                c.editStatus({name: `${body.artist_name} ${config.separator || '-'} ${body.song_name}`})
+            } else {
+                c.editStatus({name: 'music probably'});
+                console.log("Getting song info didn't work\n"+err)
+            }
+        })
+
+        setTimeout(gameCurrentGuilds, 15000)
     }
-    updateGame()
-    setInterval(updateGame, config.gameInterval)
+
+    function gameCurrentGuilds () {
+        c.editStatus({name: `on ${c.guilds.size} servers`})
+        setTimeout(gameCurrentUsers, 5000)
+    }
+
+    function gameCurrentUsers () {
+        let userCount = 0
+        // For every guild
+        c.guilds.forEach(g => {
+            // For every channel that is a voice channel and we're in
+            g.channels.filter(d => d.voiceMembers ? d.voiceMembers.get('222167140004790273') : false).forEach(d => {
+                // Add the number of members in this channel, not counting ourself
+                thing += d.voiceMembers.size - 1
+            })
+        })
+
+        c.editStatus({name: `for ${userCount} listeners`})
+        setTimeout(gameCurrentSong, 5000)
+    }
 
     // end useless code - begin code that does useful things
     // (I could get into an argument about relative usefulness here but I'll leave that for another unnecessary comment)
