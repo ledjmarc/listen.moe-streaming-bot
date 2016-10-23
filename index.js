@@ -84,6 +84,7 @@ c.once('ready', () => {
         }
         process.exit(1) // Kill ourself if the stream died, so our process monitor can restart us
         // hey anon suicide is bad okay
+        // please anon dont k?
     }
     sharedStream.on('error', errorHandler)
     sharedStream.on('end', errorHandler)
@@ -266,7 +267,24 @@ c.on('messageCreate', (msg) => { // Commands 'n' shit
         c.createMessage(msg.channel.id, thing)
     } else if (content === 'servers') {
         if (!config.owners.includes(msg.author.id)) return c.createMessage(msg.channel.id, 'soz bae must be bot owner') // jkfhasdkjhfkajshdkfsf
-        c.createMessage(msg.channel.id, c.guilds.map(g=>`\`${g.id}\` ${g.name}`).join('\n'))
+
+        let message = c.guilds.map(g=>`\`${g.id}\` ${g.name}`).join('\n');
+        let messageLengthCap = 2000;
+
+        let strs = [];
+        while(message.length > messageLengthCap){
+            let pos = message.substring(0, messageLengthCap).lastIndexOf('\n');
+            pos = pos <= 0 ? messageLengthCap : pos;
+            strs.push(message.substring(0, pos));
+            let i = message.indexOf('\n', pos)+1;
+            if(i < pos || i > pos+messageLengthCap)
+                i = pos;
+            message = message.substring(i);
+        }
+        strs.push(message);
+
+        for (let i = 0; i < strs.length; i++)
+            c.createMessage(msg.channel.id, strs[i]);
     }
 })
 
