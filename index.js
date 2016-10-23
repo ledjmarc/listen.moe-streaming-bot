@@ -14,7 +14,11 @@ try {
     guilds = {}
 }
 
-let c = new Eris.Client(config.token)
+let c = new Eris.CommandClient(config.token, { userAccount: false }, {
+    description: "LISTEN.moe streaming bot by Geo1088",
+    prefix: "~~",
+});
+
 let sharedStream = c.createSharedStream(config.stream, config.ua)
 
 function joinVoice (client, guild, channel) { // Join a voice channel and start playing the stream there
@@ -132,161 +136,200 @@ c.once('ready', () => {
     // (I could get into an argument about relative usefulness here but I'll leave that for another unnecessary comment)
     for (let guild of Object.keys(guilds)) { // loop through all the servers recorded
         let channel = getGuildConfig(guild, 'vc') // Get the channel for this guild
+        let prefix = getGuildConfig(guild, 'prefix') // Get the prefix for this guild
+
         if (channel) joinVoice(c, guild, channel) // Connect and play if there's one set
+        if (prefix) c.registerGuildPrefix(guild, prefix);
     }
 })
 
-c.on('messageCreate', (msg) => { // Commands 'n' shit
-    var content = msg.content
-    let channel = msg.channel.id
-    let guild = msg.channel.guild
-    let isPrivate = guild ? false : true
-    if (!isPrivate) guild = guild.id
-    let prefix = getGuildConfig(guild, 'prefix')
 
-    if (!content.startsWith(prefix)) return // If prefix isn't matched, throw out the message
-    content = content.substr(prefix.length)
+/*
+    HELPERS BECAUSE WHY NOT
+*/
 
-    if (content === 'join') {
-        // Join command - joins the VC the user is in, and sets that as the music channel for the server
-        // Requires manage server; can't be used in PM
-        if (isPrivate) {
-            c.createMessage(channel, "You can't do that, I can't play in private calls.")
-            return
-        }
-        if (!memberHasManageGuild(msg.member)) return
-        let member = msg.member
-        let channelId = member.voiceState ? member.voiceState.channelID : null
-        if (!channelId) {
-            // fail
-            c.createMessage(msg.channel.id, 'Join a voice channel first!')
-        } else {
-            // oh dang hello
-            writeGuildConfig(guild, {vc: channelId})
-            joinVoice(c, guild, channelId)
-            c.createMessage(channel, '\\o/')
-        }
-    } else if (content.startsWith('prefix')) {
-        // Prefix command - Change's the bot's prefix in the server
-        // Requires manage server; can't be used in PM
-        if (isPrivate) {
-            c.createMessage(channel, "You can't do that, I can't play in private calls.")
-            return
-        }
-        if (!memberHasManageGuild(msg.member)) return
-        var newPrefix = content.replace(/prefix ([\s\S]*)/, '$1')
-        if (/[a-zA-Z0-9\s\n]/.test(newPrefix)) {
-            c.createMessage(channel, "Invalid prefix. Can't be a letter, number, or whitespace character.")
-            return
-        }
-        writeGuildConfig(guild, {prefix: newPrefix})
-        c.createMessage(channel, '\\o/')
-    } else if (content === 'ignore') {
-        // Ignore command - ignores user commands in this channel
-        // Requires manage server; can't be used in PM
-        if (isPrivate) {
-            c.createMessage(channel, "You can't do that, I can't play in private calls.")
-            return
-        }
-        if (!memberHasManageGuild(msg.member)) return
-        let denied = getGuildConfig(guild, 'denied')
-        if (!denied.includes(channel)) {
-            denied.push(channel)
-            writeGuildConfig(guild, {denied: denied})
-            c.createMessage(channel, "All right, I'll ignore this channel now.")
-        } else {
-            c.createMessage(channel, "I'm already ignoring this channel.")
-            return
-        }
-    } else if (content === 'unignore') {
-        // Unignore command - Stops ignoring user commands in this channel
-        // Requires manage server; can't be used in PM
-        if (isPrivate) {
-            c.createMessage(channel, "You can't do that, I can't play in private calls.")
-            return
-        }
-        if (!memberHasManageGuild(msg.member)) return
-        let denied = getGuildConfig(guild, 'denied')
-        if (denied.includes(channel)) {
-            denied.splice(denied.indexOf(channel), 1)
-            writeGuildConfig(guild, {denied: denied})
-            c.createMessage(channel, "Got it! I'll stop ignoring this channel.")
-        } else {
-            c.createMessage(channel, "I wasn't ignoring this channel.")
-            return
-        }
-    } else if (content === 'ignoreall') {
-        // Ignore all command - Ignores all text channels in a guild
-        // Requires manage server; can't be used in PM
-        if (isPrivate) {
-            c.createMessage(channel, "You can't do that, I can't play in private calls.")
-            return
-        }
-        if (!memberHasManageGuild(msg.member)) return
-        let denied = []
-        let guildObj = c.guilds.find(g => g.id === guild)
-        let textChannelIds = guildObj.channels.filter(c => c.type === 0).map(c => c.id)
-        textChannelIds.forEach(c => denied.push(c))
-        writeGuildConfig(guild, {denied: denied})
-        c.createMessage(channel, "I'm now ignoring every channel in the server.")
-    } else if (content === 'unignoreall') {
-        // Unignore all command - stops ignoring all text channels
-        // Requires manage server; can't be used in PM
-        if (isPrivate) {
-            c.createMessage(channel, "You can't do that, I can't play in private calls.")
-            return
-        }
-        if (!memberHasManageGuild(msg.member)) return
-        writeGuildConfig(guild, {denied: []})
-        c.createMessage(channel, "I'm no longer ignoring any channels here.")
-    } else if (content === 'np' || content === 'nowplaying' || content === 'playing') { //lol
-        // Now playing - Returns info about the currently playing song
-        // Obeys channel ignores
-        if (getGuildConfig(guild, 'denied').includes(channel)) return // Do nothing if this channel is ignored
-        getSongInfo((err, info) => {
-            if (!err) {
-                c.createMessage(channel, `**Now playing:** "${info.song_name}" by ${info.artist_name}${
-                    info.request ? `\n**Requested by:** ${info.requested_by} (<https://forum.listen.moe/u/${info.requested_by}>)` : ''
-                    //3deep5me
-                    // seriously though there's gotta be a better way to do this shit
-                }${
-                    info.anime_name ? `\n**Anime:** ${info.anime_name}` : ''
-                    // yes
-                }`)
-            }
-        })
-    } else if (content.startsWith('eval')) {
-        if (!config.owners.includes(msg.author.id)) return c.createMessage(msg.channel.id, 'soz bae must be bot owner') // todo: stop using unnecessary todo lines that make lines way too long
-        let toEval = content.replace(/eval ([\s\S]*)/, '$1')
-        let thing
-        try {
-            thing = eval(toEval) // eval is harmful my ass
-        } catch (e) {
-            thing = e
-        }
-        c.createMessage(msg.channel.id, thing)
-    } else if (content === 'servers') {
-        if (!config.owners.includes(msg.author.id)) return c.createMessage(msg.channel.id, 'soz bae must be bot owner') // jkfhasdkjhfkajshdkfsf
+function checkIsPrivate(msg){
+    let isPrivate = msg.channel.guild ? false : true;
+    if(isPrivate)
+        c.createMessage(msg.channel.id, "You can't do that, I can't play in private calls.");
+    return isPrivate;
+}
 
-        let message = c.guilds.map(g=>`\`${g.id}\` ${g.name}`).join('\n');
-        let messageLengthCap = 2000;
+function sendNowPlayingToChannel(msg){
 
-        let strs = [];
-        while(message.length > messageLengthCap){
-            let pos = message.substring(0, messageLengthCap).lastIndexOf('\n');
-            pos = pos <= 0 ? messageLengthCap : pos;
-            strs.push(message.substring(0, pos));
-            let i = message.indexOf('\n', pos)+1;
-            if(i < pos || i > pos+messageLengthCap)
-                i = pos;
-            message = message.substring(i);
+    if (getGuildConfig(msg.channel.guild.id, 'denied').includes(msg.channel.id)) return // Do nothing if this channel is ignored
+    getSongInfo((err, info) => {
+        if (!err) {
+            c.createMessage(msg.channel.id, `**Now playing:** "${info.song_name}" by ${info.artist_name}${
+                info.request ? `\n**Requested by:** ${info.requested_by} (<https://forum.listen.moe/u/${info.requested_by}>)` : ''
+                //3deep5me
+                // seriously though there's gotta be a better way to do this shit
+            }${
+                info.anime_name ? `\n**Anime:** ${info.anime_name}` : ''
+                // yes
+            }`)
         }
-        strs.push(message);
+    })
 
-        for (let i = 0; i < strs.length; i++)
-            c.createMessage(msg.channel.id, strs[i]);
+}
+
+// Rewrote commands using the command framework from Eris
+c.registerCommand("join", (msg, args) => {
+
+    // Join command - joins the VC the user is in, and sets that as the music channel for the server
+    // Requires manage server; can't be used in PM
+    if (checkIsPrivate(msg)) return
+    if (!memberHasManageGuild(msg.member)) return
+
+    let member = msg.member
+    let channelId = member.voiceState ? member.voiceState.channelID : null
+    if (!channelId) {
+        // fail
+        c.createMessage(msg.channel.id, 'Join a voice channel first!')
+    } else {
+        // oh dang hello
+        writeGuildConfig(msg.channel.guild.id, {vc: channelId})
+        joinVoice(c, msg.channel.guild.id, channelId)
+        c.createMessage(msg.channel.id, '\\o/')
     }
-})
+
+});
+
+c.registerCommand("prefix", (msg, args) => {
+
+    // Prefix command - Change's the bot's prefix in the server
+    // Requires manage server; can't be used in PM
+    if (checkIsPrivate(msg)) return
+    if (!memberHasManageGuild(msg.member)) return
+
+    if(args[0] === undefined){
+        c.createMessage(msg.channel.id, "You must provide a new prefix");
+        return
+    }
+
+    let newPrefix = args[0];
+    if (/[a-zA-Z0-9\s\n]/.test(newPrefix)) {
+        c.createMessage(msg.channel.id, "Invalid prefix. Can't be a letter, number, or whitespace character.")
+        return
+    }
+    writeGuildConfig(msg.channel.guild.id, {prefix: newPrefix})
+    c.registerGuildPrefix(msg.channel.guild.id, newPrefix);
+    c.createMessage(msg.channel.id, '\\o/')
+
+});
+
+c.registerCommand("ignore", (msg, args) => {
+
+    // Ignore command - ignores user commands in this channel
+    // Requires manage server; can't be used in PM
+    if (checkIsPrivate(msg)) return
+    if (!memberHasManageGuild(msg.member)) return
+
+    let denied = getGuildConfig(msg.channel.guild.id, 'denied')
+    if (!denied.includes(msg.channel.id)) {
+        denied.push(msg.channel.id)
+        writeGuildConfig(msg.channel.guild.id, {denied: denied})
+        c.createMessage(msg.channel.id, "All right, I'll ignore this channel now.")
+    } else {
+        c.createMessage(msg.channel.id, "I'm already ignoring this channel.")
+        return
+    }
+});
+
+c.registerCommand("unignore", (msg, args) => {
+
+    // Unignore command - Stops ignoring user commands in this channel
+    // Requires manage server; can't be used in PM
+    if (checkIsPrivate(msg)) return
+    if (!memberHasManageGuild(msg.member)) return
+
+    let denied = getGuildConfig(msg.channel.guild.id, 'denied')
+    if (denied.includes(msg.channel.id)) {
+        denied.splice(denied.indexOf(msg.channel.id), 1)
+        writeGuildConfig(msg.channel.guild.id, {denied: denied})
+        c.createMessage(msg.channel.id, "Got it! I'll stop ignoring this channel.")
+    } else {
+        c.createMessage(msg.channel.id, "I wasn't ignoring this channel.")
+        return
+    }
+
+});
+
+c.registerCommand("ignoreall", (msg, args) => {
+
+    // Ignore all command - Ignores all text channels in a guild
+    // Requires manage server; can't be used in PM
+    if (checkIsPrivate(msg)) return
+    if (!memberHasManageGuild(msg.member)) return
+
+    let denied = []
+    let guildObj = c.guilds.find(g => g.id === msg.channel.guild.id)
+    let textChannelIds = guildObj.channels.filter(c => c.type === 0).map(c => c.id)
+    textChannelIds.forEach(c => denied.push(c))
+    writeGuildConfig(msg.channel.guild.id, {denied: denied})
+    c.createMessage(msg.channel.id, "I'm now ignoring every channel in the server.")
+
+});
+
+c.registerCommand("unignoreall", (msg, args) => {
+
+    // Unignore all command - stops ignoring all text channels
+    // Requires manage server; can't be used in PM
+    if (checkIsPrivate(msg)) return
+    if (!memberHasManageGuild(msg.member)) return
+
+    writeGuildConfig(msg.channel.guild.id, {denied: []})
+    c.createMessage(msg.channel.id, "I'm no longer ignoring any channels here.")
+
+});
+
+c.registerCommand("np", (msg, args)         => { sendNowPlayingToChannel(msg) });
+c.registerCommand("nowplaying", (msg, args) => { sendNowPlayingToChannel(msg) });
+c.registerCommand("playing", (msg, args)    => { sendNowPlayingToChannel(msg) });
+
+c.registerCommand("eval", (msg, args) => {
+    if (!config.owners.includes(msg.author.id)) return c.createMessage(msg.channel.id, 'soz bae must be bot owner') // todo: stop using unnecessary todo lines that make lines way too long
+    let toEval = content.replace(/eval ([\s\S]*)/, '$1')
+    let thing
+    try {
+        thing = eval(toEval) // eval is harmful my ass
+    } catch (e) {
+        thing = e
+    }
+    c.createMessage(msg.channel.id, thing)
+});
+
+c.registerCommand("servers", (msg, args) => {
+
+    if (!config.owners.includes(msg.author.id)) return c.createMessage(msg.channel.id, 'soz bae must be bot owner') // jkfhasdkjhfkajshdkfsf
+
+    let message = c.guilds.map(g=>`\`${g.id}\` ${g.name}`).join('\n');
+    let messageLengthCap = 2000;
+
+    let strs = [];
+    while(message.length > messageLengthCap){
+        let pos = message.substring(0, messageLengthCap).lastIndexOf('\n');
+        pos = pos <= 0 ? messageLengthCap : pos;
+        strs.push(message.substring(0, pos));
+        let i = message.indexOf('\n', pos)+1;
+        if(i < pos || i > pos+messageLengthCap)
+            i = pos;
+        message = message.substring(i);
+    }
+    strs.push(message);
+
+    for (let i = 0; i < strs.length; i++)
+        c.createMessage(msg.channel.id, strs[i]);
+
+    // kana was here :eyes:
+});
+
+/*
+    Template
+    c.registerCommand("servers", (msg, args) => {
+        // hai
+    });
+*/
 
 c.connect()
 
