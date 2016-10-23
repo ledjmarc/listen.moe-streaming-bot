@@ -155,24 +155,6 @@ function checkIsPrivate(msg){
     return isPrivate
 }
 
-function sendNowPlayingToChannel(msg){
-
-    if (getGuildConfig(msg.channel.guild.id, 'denied').includes(msg.channel.id)) return // Do nothing if this channel is ignored
-    getSongInfo((err, info) => {
-        if (!err) {
-            c.createMessage(msg.channel.id, `**Now playing:** "${info.song_name}" by ${info.artist_name}${
-                info.request ? `\n**Requested by:** ${info.requested_by} (<https://forum.listen.moe/u/${info.requested_by}>)` : ''
-                //3deep5me
-                // seriously though there's gotta be a better way to do this shit
-            }${
-                info.anime_name ? `\n**Anime:** ${info.anime_name}` : ''
-                // yes
-            }`)
-        }
-    })
-
-}
-
 // Rewrote commands using the command framework from Eris
 c.registerCommand('join', msg => {
 
@@ -283,9 +265,23 @@ c.registerCommand('unignoreall', msg => {
 
 })
 
-c.registerCommand('np',         msg => sendNowPlayingToChannel(msg))
-c.registerCommand('nowplaying', msg => sendNowPlayingToChannel(msg))
-c.registerCommand('playing',    msg => sendNowPlayingToChannel(msg))
+c.registerCommand('np', msg => {
+
+    if (getGuildConfig(msg.channel.guild.id, 'denied').includes(msg.channel.id)) return // Do nothing if this channel is ignored
+    getSongInfo((err, info) => {
+        if (!err) {
+            c.createMessage(msg.channel.id, `**Now playing:** "${info.song_name}" by ${info.artist_name}${
+                info.request ? `\n**Requested by:** ${info.requested_by} (<https://forum.listen.moe/u/${info.requested_by}>)` : ''
+                //3deep5me
+                // seriously though there's gotta be a better way to do this shit
+            }${
+                info.anime_name ? `\n**Anime:** ${info.anime_name}` : ''
+                // yes
+            }`)
+        }
+    })
+
+}, { aliases: ['playing', 'nowplaying'] })
 
 c.registerCommand('eval', (msg, args) => {
     if (!config.owners.includes(msg.author.id)) return c.createMessage(msg.channel.id, 'soz bae must be bot owner') // todo: stop using unnecessary todo lines that make lines way too long
