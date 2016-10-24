@@ -26,7 +26,7 @@ let c = new Eris.CommandClient(config.token, { userAccount: false }, {
 let sharedStream = c.createSharedStream(config.stream, config.ua)
 
 function joinVoice (client, guild, channel) { // Join a voice channel and start playing the stream there
-    let cc = client.voiceConnections.find(vc => vc.id === guild) // Find a current connection in this guild
+    let cc = client.voiceConnections.guilds[guild] // Find a current connection in this guild
     if (cc) { // If there is one
         // Just switch the channel for this connection
         cc.switchChannel(channel)
@@ -34,12 +34,13 @@ function joinVoice (client, guild, channel) { // Join a voice channel and start 
         writeGuildConfig(guild, {vc: channel})
     } else { // Looks like we'll need to make a new one
         // Create a new voice connection and join the channel
-        sharedStream.joinVoiceChannel(channel).then(vc => {
+        client.joinVoiceChannel(channel, { shared: true }).then(vc => {
             if (vc) {
+                sharedStream.voiceConnections.add(vc)
                 let realGuild = c.guilds.get(guild)
                 console.log(`Added voice connection for guild ${realGuild.name} (${realGuild.id})`)
             }
-        }, error => {
+        }).catch(error => {
             console.log(error)
         })
     }
@@ -99,6 +100,7 @@ c.once('ready', () => {
     sharedStream.on('disconnect', (vc) => {
         console.log(':( - Disconnected from ' + vc.id)
     })
+    sharedStream.play(config.stream)
 
     console.log(`Connected as ${c.user.username} / Currently in ${c.guilds.size} servers`)
 
