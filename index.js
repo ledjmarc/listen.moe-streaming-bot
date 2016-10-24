@@ -136,6 +136,8 @@ c.once('ready', () => {
         setTimeout(gameCurrentSong, 5000)
     }
 
+    gameCurrentSong(); // Let's fire up the non-practical value but fun code
+    
     // end useless code - begin code that does useful things
     // (I could get into an argument about relative usefulness here but I'll leave that for another unnecessary comment)
     for (let guild of Object.keys(guilds)) { // loop through all the servers recorded
