@@ -16,8 +16,11 @@ try {
 
 let c = new Eris.CommandClient(config.token, { userAccount: false }, {
     description: 'LISTEN.moe streaming bot by Geo1088 & friends',
-    prefix: config.guildDefaults.prefix || '~~'
+    prefix: config.guildDefaults.prefix || '~~',
     // that line actually reminds me, guildDefaults might need to be rethought
+    defaultCommandOptions: {
+        guildOnly: true
+    }
 })
 
 let sharedStream = c.createSharedStream(config.stream, config.ua)
@@ -144,23 +147,11 @@ c.once('ready', () => {
     }
 })
 
-
-/*
-    HELPERS BECAUSE WHY NOT
-*/
-
-function checkIsPrivate(msg){
-    let isPrivate = msg.channel.guild ? false : true
-    if(isPrivate) c.createMessage(msg.channel.id, "You can't do that, I can't play in private calls.")
-    return isPrivate
-}
-
 // Rewrote commands using the command framework from Eris
 c.registerCommand('join', msg => {
 
     // Join command - joins the VC the user is in, and sets that as the music channel for the server
     // Requires manage server; can't be used in PM
-    if (checkIsPrivate(msg)) return
     if (!memberHasManageGuild(msg.member)) return
 
     let member = msg.member
@@ -181,7 +172,6 @@ c.registerCommand('prefix', (msg, args) => {
 
     // Prefix command - Change's the bot's prefix in the server
     // Requires manage server; can't be used in PM
-    if (checkIsPrivate(msg)) return
     if (!memberHasManageGuild(msg.member)) return
 
     if(args[0] === undefined){
@@ -204,7 +194,6 @@ c.registerCommand('ignore', msg => {
 
     // Ignore command - ignores user commands in this channel
     // Requires manage server; can't be used in PM
-    if (checkIsPrivate(msg)) return
     if (!memberHasManageGuild(msg.member)) return
 
     let denied = getGuildConfig(msg.channel.guild.id, 'denied')
@@ -222,7 +211,6 @@ c.registerCommand('unignore', msg => {
 
     // Unignore command - Stops ignoring user commands in this channel
     // Requires manage server; can't be used in PM
-    if (checkIsPrivate(msg)) return
     if (!memberHasManageGuild(msg.member)) return
 
     let denied = getGuildConfig(msg.channel.guild.id, 'denied')
@@ -241,7 +229,6 @@ c.registerCommand('ignoreall', msg => {
 
     // Ignore all command - Ignores all text channels in a guild
     // Requires manage server; can't be used in PM
-    if (checkIsPrivate(msg)) return
     if (!memberHasManageGuild(msg.member)) return
 
     let denied = []
@@ -257,7 +244,6 @@ c.registerCommand('unignoreall', msg => {
 
     // Unignore all command - stops ignoring all text channels
     // Requires manage server; can't be used in PM
-    if (checkIsPrivate(msg)) return
     if (!memberHasManageGuild(msg.member)) return
 
     writeGuildConfig(msg.channel.guild.id, {denied: []})
@@ -270,14 +256,9 @@ c.registerCommand('np', msg => {
     if (getGuildConfig(msg.channel.guild.id, 'denied').includes(msg.channel.id)) return // Do nothing if this channel is ignored
     getSongInfo((err, info) => {
         if (!err) {
-            c.createMessage(msg.channel.id, `**Now playing:** "${info.song_name}" by ${info.artist_name}${
-                info.request ? `\n**Requested by:** ${info.requested_by} (<https://forum.listen.moe/u/${info.requested_by}>)` : ''
-                //3deep5me
-                // seriously though there's gotta be a better way to do this shit
-            }${
-                info.anime_name ? `\n**Anime:** ${info.anime_name}` : ''
-                // yes
-            }`)
+            let requestby = info.request ? `\n**Requested by:** ${info.requested_by} (<https://forum.listen.moe/u/${info.requested_by}>)` : ''
+            let anime = info.anime_name ? `\n**Anime:** ${info.anime_name}` : ''
+            c.createMessage(msg.channel.id, `**Now playing:** "${info.song_name}" by ${info.artist_name}${requestby}${anime}`)
         }
     })
 
