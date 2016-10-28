@@ -6,7 +6,7 @@ const reload = require('require-reload')(require);
 
 let config = require('./config.json');
 
-let guilds
+let guilds;
 try {
     guilds = reload('./guilds.json');
 } catch (e) {
@@ -156,7 +156,7 @@ c.registerCommand('join', msg => {
 
     // Join command - joins the VC the user is in, and sets that as the music channel for the server
     // Requires manage server; can't be used in PM
-    if (!memberHasManageGuild(msg.member)); return
+    if (!memberHasManageGuild(msg.member)) return;
 
     const member = msg.member;
     const channelId = member.voiceState ? member.voiceState.channelID : null;
@@ -170,6 +170,23 @@ c.registerCommand('join', msg => {
         c.createMessage(msg.channel.id, '\\o/');
     }
 
+});
+
+c.registerCommand('leave', msg => {
+
+    // Leaves the voice channel, but not the server
+    // Requires manage server; can't be used in PM
+    if (!memberHasManageGuild(msg.member)) return;
+
+    const member = msg.member;
+    const channelId = member.voiceState ? member.voiceState.channelID : null;
+    if (!channelId) {
+        // fail
+        c.createMessage(msg.channel.id, 'Join a voice channel first!');
+    } else {
+        c.leaveVoiceChannel(channelId);
+        c.createMessage(msg.channel.id, ';_; o-okay...')
+    }
 })
 
 c.registerCommand('prefix', (msg, args) => {
