@@ -139,7 +139,7 @@ c.once('ready', () => {
     }
 
     gameCurrentSong(); // Let's fire up the non-practical value but fun code
-    
+
     // end useless code - begin code that does useful things
     // (I could get into an argument about relative usefulness here but I'll leave that for another unnecessary comment)
     for (let guild of Object.keys(guilds)) { // loop through all the servers recorded
@@ -170,6 +170,24 @@ c.registerCommand('join', msg => {
         c.createMessage(msg.channel.id, '\\o/')
     }
 
+})
+
+c.registerCommand('leave', msg => {
+
+    // Leaves the voice channel, but not the server
+    // Requires manage server; can't be used in PM
+    if (!memberHasManageGuild(msg.member)) return;
+
+    let member = msg.member;
+    let channelId = member.voiceState ? member.voiceState.channelID : null;
+    if (!channelId) {
+        // fail
+        c.createMessage(msg.channel.id, 'Join a voice channel first!')
+    } else {
+        writeGuildConfig(msg.channel.guild.id, {vc: null})
+        c.leaveVoiceChannel(channelId)
+        c.createMessage(msg.channel.id, ';_; o-okay...')
+    }
 })
 
 c.registerCommand('prefix', (msg, args) => {
