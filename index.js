@@ -105,7 +105,7 @@ c.once('ready', () => {
 
     console.log(`Connected as ${c.user.username} / Currently in ${c.guilds.size} servers`)
 
-    //Changes the bot's "Now playing" status to the current song playing on the radio.
+    // Changes the bot's "Now playing" status to the current song playing on the radio.
     function gameCurrentSong () {
         getSongInfo((err, body) => {
             if (!err) {
@@ -116,11 +116,27 @@ c.once('ready', () => {
             }
         })
 
-        setTimeout(gameCurrentGuilds, 15000)
+        setTimeout(gameCurrentUsersAndGuilds, 20000)
+    }
+
+    // Since we're getting rate limited, lets merge Listeners and Guilds on a single update
+    function gameCurrentUsersAndGuilds(){
+        let userCount = 0
+        // For every guild
+        c.guilds.forEach(g => {
+            // For every channel that is a voice channel and we're in
+            g.channels.filter(d => d.voiceMembers ? d.voiceMembers.get('222167140004790273') : false).forEach(d => {
+                // Add the number of members in this channel, not counting ourself
+                userCount += d.voiceMembers.size - 1
+            })
+        })
+
+        c.editStatus({name: `for ${userCount} on ${c.guilds.size} servers`})
+        setTimeout(gameCurrentSong, 10000)
     }
 
     //Changes the bot's "Now playing" status to the number of servers it is playing in.
-    function gameCurrentGuilds () {
+    /*function gameCurrentGuilds () {
         c.editStatus({name: `on ${c.guilds.size} servers`})
         setTimeout(gameCurrentUsers, 5000)
     }
@@ -139,11 +155,11 @@ c.once('ready', () => {
 
         c.editStatus({name: `for ${userCount} listeners`})
         setTimeout(gameCurrentSong, 5000)
-    }
+    }*/
 
-    gameCurrentSong();
+    gameCurrentSong()
 
-    //Rejoin channels that we were connected to
+    // Rejoin channels that we were connected to
     for (let guild of Object.keys(guilds)) { // loop through all the servers recorded
         let channel = getGuildConfig(guild, 'vc') // Get the channel for this guild
         let prefix = getGuildConfig(guild, 'prefix') // Get the prefix for this guild
@@ -176,10 +192,10 @@ c.registerCommand('join', msg => {
 c.registerCommand('leave', msg => {
     // Leaves the voice channel, but not the server
     // Requires manage server; can't be used in PM
-    if (!memberHasManageGuild(msg.member)) return;
+    if (!memberHasManageGuild(msg.member)) return
 
-    let member = msg.member;
-    let channelId = member.voiceState ? member.voiceState.channelID : null;
+    let member = msg.member
+    let channelId = member.voiceState ? member.voiceState.channelID : null
     if (!channelId) {
         // fail
         c.createMessage(msg.channel.id, 'Join a voice channel first!')
@@ -268,9 +284,9 @@ c.registerCommand('unignoreall', msg => {
 
 })
 
-c.registerCommand('np', msg => 
+c.registerCommand('np', msg => {
     // Now playing command - lists the current playing song on the radio
-    if (getGuildConfig(msg.channel.guild.id, 'denied').includes(msg.channel.id)) return // Do nothing if this channel is ignored
+    if(getGuildConfig(msg.channel.guild.id, 'denied').includes(msg.channel.id)) return // Do nothing if this channel is ignored
     getSongInfo((err, info) => {
         if (!err) {
             let requestby = info.request ? `\n**Requested by:** ${info.requested_by} (<https://forum.listen.moe/u/${info.requested_by}>)` : ''
@@ -314,6 +330,8 @@ c.registerCommand('servers', msg => {
     strs.push(message)
 
     for (let str of strs) c.createMessage(msg.channel.id, str)
+
+    // Kana was here >:O
 })
 
 /*
