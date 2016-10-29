@@ -100,7 +100,7 @@ c.once('ready', () => {
     sharedStream.on('disconnect', (vc) => {
         console.log(':( - Disconnected from ' + vc.id)
     })
-	sharedStream.play()
+    sharedStream.play()
 
     console.log(`Connected as ${c.user.username} / Currently in ${c.guilds.size} servers`)
 
