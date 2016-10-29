@@ -83,6 +83,7 @@ function memberHasManageGuild (member) { // Return whether or not the user can m
 }
 
 c.once('ready', () => {
+    //Initialise SharedStream events
     let errorHandler = (e) => {
         console.log('SharedStream died!')
         if (e) {
@@ -104,7 +105,7 @@ c.once('ready', () => {
 
     console.log(`Connected as ${c.user.username} / Currently in ${c.guilds.size} servers`)
 
-    // This code has no practical value, but it's fun so w/e
+    //Changes the bot's "Now playing" status to the current song playing on the radio.
     function gameCurrentSong () {
         getSongInfo((err, body) => {
             if (!err) {
@@ -118,11 +119,13 @@ c.once('ready', () => {
         setTimeout(gameCurrentGuilds, 15000)
     }
 
+    //Changes the bot's "Now playing" status to the number of servers it is playing in.
     function gameCurrentGuilds () {
         c.editStatus({name: `on ${c.guilds.size} servers`})
         setTimeout(gameCurrentUsers, 5000)
     }
 
+    //Changes the bot's "Now playing" status to the number of current listeners of the bot.
     function gameCurrentUsers () {
         let userCount = 0
         // For every guild
@@ -138,10 +141,9 @@ c.once('ready', () => {
         setTimeout(gameCurrentSong, 5000)
     }
 
-    gameCurrentSong(); // Let's fire up the non-practical value but fun code
+    gameCurrentSong();
 
-    // end useless code - begin code that does useful things
-    // (I could get into an argument about relative usefulness here but I'll leave that for another unnecessary comment)
+    //Rejoin channels that we were connected to
     for (let guild of Object.keys(guilds)) { // loop through all the servers recorded
         let channel = getGuildConfig(guild, 'vc') // Get the channel for this guild
         let prefix = getGuildConfig(guild, 'prefix') // Get the prefix for this guild
@@ -153,7 +155,6 @@ c.once('ready', () => {
 
 // Rewrote commands using the command framework from Eris
 c.registerCommand('join', msg => {
-
     // Join command - joins the VC the user is in, and sets that as the music channel for the server
     // Requires manage server; can't be used in PM
     if (!memberHasManageGuild(msg.member)) return
@@ -173,7 +174,6 @@ c.registerCommand('join', msg => {
 })
 
 c.registerCommand('leave', msg => {
-
     // Leaves the voice channel, but not the server
     // Requires manage server; can't be used in PM
     if (!memberHasManageGuild(msg.member)) return;
@@ -191,7 +191,6 @@ c.registerCommand('leave', msg => {
 })
 
 c.registerCommand('prefix', (msg, args) => {
-
     // Prefix command - Change's the bot's prefix in the server
     // Requires manage server; can't be used in PM
     if (!memberHasManageGuild(msg.member)) return
@@ -213,7 +212,6 @@ c.registerCommand('prefix', (msg, args) => {
 })
 
 c.registerCommand('ignore', msg => {
-
     // Ignore command - ignores user commands in this channel
     // Requires manage server; can't be used in PM
     if (!memberHasManageGuild(msg.member)) return
@@ -230,7 +228,6 @@ c.registerCommand('ignore', msg => {
 })
 
 c.registerCommand('unignore', msg => {
-
     // Unignore command - Stops ignoring user commands in this channel
     // Requires manage server; can't be used in PM
     if (!memberHasManageGuild(msg.member)) return
@@ -248,7 +245,6 @@ c.registerCommand('unignore', msg => {
 })
 
 c.registerCommand('ignoreall', msg => {
-
     // Ignore all command - Ignores all text channels in a guild
     // Requires manage server; can't be used in PM
     if (!memberHasManageGuild(msg.member)) return
@@ -263,7 +259,6 @@ c.registerCommand('ignoreall', msg => {
 })
 
 c.registerCommand('unignoreall', msg => {
-
     // Unignore all command - stops ignoring all text channels
     // Requires manage server; can't be used in PM
     if (!memberHasManageGuild(msg.member)) return
@@ -273,8 +268,8 @@ c.registerCommand('unignoreall', msg => {
 
 })
 
-c.registerCommand('np', msg => {
-
+c.registerCommand('np', msg => 
+    // Now playing command - lists the current playing song on the radio
     if (getGuildConfig(msg.channel.guild.id, 'denied').includes(msg.channel.id)) return // Do nothing if this channel is ignored
     getSongInfo((err, info) => {
         if (!err) {
@@ -287,6 +282,8 @@ c.registerCommand('np', msg => {
 }, { aliases: ['playing', 'nowplaying'] })
 
 c.registerCommand('eval', (msg, args) => {
+    // Eval command - Allows the owner to dynamically run scripts against the bot from inside Discord
+    // Requires explicit owner permission inside the config file
     if (!config.owners.includes(msg.author.id)) return c.createMessage(msg.channel.id, 'soz bae must be bot owner') // todo: stop using unnecessary todo lines that make lines way too long
     let thing
     try {
@@ -298,7 +295,8 @@ c.registerCommand('eval', (msg, args) => {
 })
 
 c.registerCommand('servers', msg => {
-
+    // Server list command - lists the names and id's of all servers the bot is in
+    // Requires explicit owner permission inside the config file
     if (!config.owners.includes(msg.author.id)) return c.createMessage(msg.channel.id, 'soz bae must be bot owner') // jkfhasdkjhfkajshdkfsf
 
     let message = c.guilds.map(g=>`\`${g.id}\` ${g.name}`).join('\n')
@@ -316,8 +314,6 @@ c.registerCommand('servers', msg => {
     strs.push(message)
 
     for (let str of strs) c.createMessage(msg.channel.id, str)
-
-    // kana was here :eyes:
 })
 
 /*
