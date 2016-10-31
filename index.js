@@ -36,6 +36,7 @@ function joinVoice (client, guild, channel) { // Join a voice channel and start 
         // Create a new voice connection and join the channel
         client.joinVoiceChannel(channel, { shared: true }).then(vc => {
             if (vc) {
+                vc.setSpeaking(true)
                 sharedStream.voiceConnections.add(vc)
                 let realGuild = c.guilds.get(guild)
                 console.log(`Added voice connection for guild ${realGuild.name} (${realGuild.id})`)
@@ -101,7 +102,7 @@ c.once('ready', () => {
     sharedStream.on('disconnect', (vc) => {
         console.log(':( - Disconnected from ' + vc.id)
     })
-    sharedStream.play()
+    sharedStream.play(config.stream)
 
     console.log(`Connected as ${c.user.username} / Currently in ${c.guilds.size} servers`)
 
@@ -200,9 +201,13 @@ c.registerCommand('leave', msg => {
         // fail
         c.createMessage(msg.channel.id, 'Join a voice channel first!')
     } else {
-        writeGuildConfig(msg.channel.guild.id, {vc: null})
-        c.leaveVoiceChannel(channelId)
-        c.createMessage(msg.channel.id, ';_; o-okay...')
+        let vc = sharedStream.voiceConnections.find((vc) => vc.id === msg.guild.id)
+        if (vc) {
+            c.leaveVoiceChannel(channelId)
+            sharedStream.voiceConnections.remove(vc)
+            writeGuildConfig(msg.channel.guild.id, {vc: null})
+            c.createMessage(msg.channel.id, ';_; o-okay...')
+        }
     }
 })
 
@@ -303,7 +308,9 @@ c.registerCommand('eval', (msg, args) => {
     if (!config.owners.includes(msg.author.id)) return c.createMessage(msg.channel.id, 'soz bae must be bot owner') // todo: stop using unnecessary todo lines that make lines way too long
     let thing
     try {
-        thing = eval(args[0]) // eval is harmful my ass
+        let command = args.join(" ");
+        console.log(command);
+        thing = eval(command) // eval is harmful my ass
     } catch (e) {
         thing = e
     }
