@@ -83,6 +83,8 @@ function memberHasManageGuild (member) { // Return whether or not the user can m
     return member.permission.json.manageGuild
 }
 
+
+
 c.once('ready', () => {
     //Initialise SharedStream events
     let errorHandler = (e) => {
@@ -106,6 +108,26 @@ c.once('ready', () => {
 
     console.log(`Connected as ${c.user.username} / Currently in ${c.guilds.size} servers`)
 
+    // Gets the current amount of people actively listening to the bot and sets it to a var - called once every 20 seconds
+    let listeners = 0
+    function currentListeners () {
+        let userCount = 0
+        // For every guild
+        c.guilds.forEach(g => {
+            // For every channel that is a voice channel and we're in
+            g.channels.filter(d => d.voiceMembers ? d.voiceMembers.get(c.user.id) : false).forEach(d => {
+                // get the number of undeafaned users that aren't us in the currently-iterating channel
+                // dw about it
+                let voiceUsers = d.voiceMembers.filter(m => m.id !== c.user.id && !m.voiceState.selfDeaf && !m.voiceState.deaf).length
+                // Add the number of members in this channel, not counting ourself
+                userCount += voiceUsers
+            })
+        })
+        listeners = userCount
+    }
+    currentListeners()
+    setInterval(currentListeners, 20000)
+
     // Changes the bot's "Now playing" status to the current song playing on the radio.
     function gameCurrentSong () {
         getSongInfo((err, body) => {
@@ -121,22 +143,14 @@ c.once('ready', () => {
     }
 
     // Since we're getting rate limited, lets merge Listeners and Guilds on a single update
-    function gameCurrentUsersAndGuilds(){
-        let userCount = 0
-        // For every guild
-        c.guilds.forEach(g => {
-            // For every channel that is a voice channel and we're in
-            g.channels.filter(d => d.voiceMembers ? d.voiceMembers.get(c.user.id) : false).forEach(d => {
-                // get the number of undeafaned users that aren't us in the currently-iterating channel
-                // dw about it
-                let voiceUsers = d.voiceMembers.filter(m => m.id !== c.user.id && !m.voiceState.selfDeaf && !m.voiceState.deaf).length
-                // Add the number of members in this channel, not counting ourself
-                userCount += voiceUsers
-            })
-        })
-
-        c.editStatus({name: `for ${userCount} on ${c.guilds.size} servers`})
+    function gameCurrentUsersAndGuilds () {
+        c.editStatus({name: `for ${listeners} on ${c.guilds.size} servers`})
         setTimeout(gameCurrentSong, 10000)
+    }
+
+    // Another function to send data to the server that someone will eventually write
+    function sendListenersData () {
+        // doSomethingWith(listeners)
     }
 
     //Changes the bot's "Now playing" status to the number of servers it is playing in.
