@@ -126,9 +126,12 @@ c.once('ready', () => {
         // For every guild
         c.guilds.forEach(g => {
             // For every channel that is a voice channel and we're in
-            g.channels.filter(d => d.voiceMembers ? d.voiceMembers.get('222167140004790273') : false).forEach(d => {
+            g.channels.filter(d => d.voiceMembers ? d.voiceMembers.get(c.user.id) : false).forEach(d => {
+                // get the number of undeafaned users that aren't us in the currently-iterating channel
+                // dw about it
+                let voiceUsers = d.voiceMembers.filter(m => m.id !== c.user.id && !m.voiceState.selfDeaf && !m.voiceState.deaf).length
                 // Add the number of members in this channel, not counting ourself
-                userCount += d.voiceMembers.size - 1
+                userCount += voiceUsers
             })
         })
 
