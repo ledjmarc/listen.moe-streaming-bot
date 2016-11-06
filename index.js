@@ -148,9 +148,17 @@ c.once('ready', () => {
         setTimeout(gameCurrentSong, 10000)
     }
 
+    if (config.listenersReportURL)
+        sendListenersData()
+
     // Another function to send data to the server that someone will eventually write
     function sendListenersData () {
-        // doSomethingWith(listeners)
+        request.post(config.listenersReportURL, {'number': listeners }, (err, res, body) => {
+            if(err)
+                console.log('Etooo, crap. Couldnt update listeners. Reason: ' + err)
+        })
+
+        setTimeout(sendListenersData, 60000)
     }
 
     //Changes the bot's "Now playing" status to the number of servers it is playing in.
