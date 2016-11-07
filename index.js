@@ -42,7 +42,7 @@ function joinVoice (client, guild, channel) { // Join a voice channel and start 
                 console.log(`Added voice connection for guild ${realGuild.name} (${realGuild.id})`)
             }
         }).catch(error => {
-            console.log(error)
+            console.log('Error connecting to channel ' + channel + ' | ' + error)
         })
     }
 
