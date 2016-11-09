@@ -33,11 +33,13 @@ This list assumes a prefix of `~~`.
   Unignores commands from all channels in the server.
 
 - `~~prefix <new prefix>`  
-  Changes the bot's prefix for this server. Prefixes cannot contain whitespace, letters, or numbers - anything else is fair game.
+  Changes the bot's prefix for this server. Prefixes cannot contain whitespace, letters, or numbers - anything else is fair game. It's recommended that you stick with the default prefix of `~~`, but this command is provided in case you find conflicts with other bots.
 
 ## Run it yourself
 
 - Clone the repo
+- Create a Discord OAuth application and bot account
+- Rename/duplicate `config-sample.json` to `config.json` and fill out the relevant information
 - Install dependencies from NPM
 - Install FFMPEG - if on Windows, make sure to add it to your PATH
 - Run the bot with `node index.js`
