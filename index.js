@@ -25,21 +25,21 @@ let c = new Eris.CommandClient(config.token, { userAccount: false }, {
 
 let sharedStream = c.createSharedStream(config.stream)
 
-function joinVoice (client, guild, channel) { // Join a voice channel and start playing the stream there
-    let cc = client.voiceConnections.guilds[guild] // Find a current connection in this guild
+function joinVoice (client, guildId, channel) { // Join a voice channel and start playing the stream there
+    let cc = client.voiceConnections.get(guildId) // Find a current connection in this guild
     if (cc) { // If there is one
         // Just switch the channel for this connection
         cc.switchChannel(channel)
         // Config thing
-        writeGuildConfig(guild, {vc: channel})
+        writeGuildConfig(guildId, {vc: channel})
     } else { // Looks like we'll need to make a new one
         // Create a new voice connection and join the channel
         client.joinVoiceChannel(channel, { shared: true }).then(vc => {
             if (vc) {
                 vc.setSpeaking(true)
                 sharedStream.voiceConnections.add(vc)
-                let realGuild = c.guilds.get(guild)
-                console.log(`Added voice connection for guild ${realGuild.name} (${realGuild.id})`)
+                let realGuild = c.guilds.get(guildId)
+                console.log(`Added voice connection for guild ${realGuild.name} (${guildId})`)
             }
         }).catch(error => {
             console.log('Error connecting to channel ' + channel + ' | ' + error)
@@ -105,6 +105,7 @@ c.once('ready', () => {
         console.log(':( - Disconnected from ' + vc.id)
     })
     sharedStream.play(config.stream)
+    console.log('Shared stream should be playing.')
 
     console.log(`Connected as ${c.user.username} / Currently in ${c.guilds.size} servers`)
 
@@ -142,16 +143,18 @@ c.once('ready', () => {
         setTimeout(gameCurrentUsersAndGuilds, 20000)
     }
 
-    // Since we're getting rate limited, lets merge Listeners and Guilds on a single update
+    // Changes the bot's game to a listener and guild count
     function gameCurrentUsersAndGuilds () {
         c.editStatus({name: `for ${listeners} on ${c.guilds.size} servers`})
         setTimeout(gameCurrentSong, 10000)
     }
 
+    gameCurrentSong() // Start the loop
+
+    // Another function to send listeners data to the listen.moe server - if you're running the bot yourself, this won't happen
     if (config.listenersReportURL)
         sendListenersData()
 
-    // Another function to send data to the server that someone will eventually write
     function sendListenersData () {
         request.post(config.listenersReportURL, {'number': listeners }, (err, res, body) => {
             if(err)
@@ -160,30 +163,6 @@ c.once('ready', () => {
 
         setTimeout(sendListenersData, 60000)
     }
-
-    //Changes the bot's "Now playing" status to the number of servers it is playing in.
-    /*function gameCurrentGuilds () {
-        c.editStatus({name: `on ${c.guilds.size} servers`})
-        setTimeout(gameCurrentUsers, 5000)
-    }
-
-    //Changes the bot's "Now playing" status to the number of current listeners of the bot.
-    function gameCurrentUsers () {
-        let userCount = 0
-        // For every guild
-        c.guilds.forEach(g => {
-            // For every channel that is a voice channel and we're in
-            g.channels.filter(d => d.voiceMembers ? d.voiceMembers.get('222167140004790273') : false).forEach(d => {
-                // Add the number of members in this channel, not counting ourself
-                userCount += d.voiceMembers.size - 1
-            })
-        })
-
-        c.editStatus({name: `for ${userCount} listeners`})
-        setTimeout(gameCurrentSong, 5000)
-    }*/
-
-    gameCurrentSong()
 
     // Rejoin channels that we were connected to
     for (let guild of Object.keys(guilds)) { // loop through all the servers recorded
@@ -333,8 +312,8 @@ c.registerCommand('eval', (msg, args) => {
     if (!config.owners.includes(msg.author.id)) return c.createMessage(msg.channel.id, 'soz bae must be bot owner') // todo: stop using unnecessary todo lines that make lines way too long
     let thing
     try {
-        let command = args.join(" ");
-        console.log(command);
+        let command = args.join(' ')
+        console.log(command)
         thing = eval(command) // eval is harmful my ass
     } catch (e) {
         thing = e
