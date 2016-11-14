@@ -29,8 +29,7 @@ let sharedStream = c.createSharedStream(config.stream)
 // SOCKET stuff for retrieving radio info
 let radioJSON = {}
 let socket = io.connect('https://listen.moe/api/info/socket')
-socket.on('connect', function (obj) { radioJSON = JSON.parse(obj) })
-socket.on('update', function (obj) { radioJSON = JSON.parse(obj) })
+socket.on('update', function (obj) { try {radioJSON = JSON.parse(obj)} catch(e) { console.log(e)} })
 
 function joinVoice (client, guildId, channel) { // Join a voice channel and start playing the stream there
     let cc = client.voiceConnections.get(guildId) // Find a current connection in this guild
@@ -334,7 +333,7 @@ c.registerCommand('np', msg => {
         }
     })*/
     if(radioJSON === {}) return
-    
+
     let requestby = radioJSON.request ? `\n**Requested by:** ${radioJSON.requested_by} (<https://forum.listen.moe/u/${radioJSON.requested_by}>)` : ''
     let anime = radioJSON.anime_name ? `\n**Anime:** ${radioJSON.anime_name}` : ''
     c.createMessage(msg.channel.id, `**Now playing:** "${radioJSON.song_name}" by ${radioJSON.artist_name}${requestby}${anime}`)
