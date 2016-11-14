@@ -114,11 +114,30 @@ c.once('ready', () => {
     })
     sharedStream.play(config.stream)
     console.log('Shared stream should be playing.')
-
     console.log(`Connected as ${c.user.username} / Currently in ${c.guilds.size} servers`)
 
-    // Gets the current amount of people actively listening to the bot and sets it to a var - called once every 20 seconds
+    // Rejoin channels that we were connected to
+    setTimeout(() => {
+        for (let guild of Object.keys(guilds)) { // loop through all the servers recorded
+            if (!c.guilds.get(guild)) return // If this guild doesn't exist, don't do anything with it (TODO: Also remove from guilds file so we don't make the mistake again)
+            let channel = getGuildConfig(guild, 'vc') // Get the channel for this guild
+            let prefix = getGuildConfig(guild, 'prefix') // Get the prefix for this guild
+
+            if (channel) joinVoice(c, guild, channel) // Connect and play if there's one set
+            if (prefix) c.registerGuildPrefix(guild, prefix) // also this
+        }
+    }, 3000)
+
+    // Let's store the listeners
     let listeners = 0
+
+    // Start all the looooops
+    currentListeners()
+    gameCurrentSong()
+    if (config.listenersReportURL)
+        sendListenersData()
+
+    // Gets the current amount of people actively listening to the bot and sets it to a var - called once every 20 seconds
     function currentListeners () {
         let userCount = 0
         // For every guild
@@ -133,30 +152,15 @@ c.once('ready', () => {
             })
         })
         listeners = userCount
+        setTimeout(currentListeners, 20000)
     }
-    currentListeners()
-    setInterval(currentListeners, 20000)
-
-    // Changes the bot's "Now playing" status to the current song playing on the radio.
-    /*function gameCurrentSong () {
-        getSongInfo((err, body) => {
-            if (!err) {
-                c.editStatus({name: `${body.artist_name} ${config.separator || '-'} ${body.song_name}`})
-            } else {
-                c.editStatus({name: 'music probably'})
-                console.log("Getting song info didn't work\n"+err)
-            }
-        })
-
-        setTimeout(gameCurrentUsersAndGuilds, 20000)
-    }*/
 
     function gameCurrentSong () {
+        let game = 'music probably'
         if(radioJSON !== {})
-            c.editStatus({name: `${radioJSON.artist_name} ${config.separator || '-'} ${radioJSON.song_name}`})
-        else
-            c.editStatus({name: 'music probably'})
+            game = `${radioJSON.artist_name} ${config.separator || '-'} ${radioJSON.song_name}`
 
+        c.editStatus({name: game})
         setTimeout(gameCurrentUsersAndGuilds, 20000)
     }
 
@@ -166,12 +170,7 @@ c.once('ready', () => {
         setTimeout(gameCurrentSong, 10000)
     }
 
-    gameCurrentSong() // Start the loop
-
     // Another function to send listeners data to the listen.moe server - if you're running the bot yourself, this won't happen
-    if (config.listenersReportURL)
-        sendListenersData()
-
     function sendListenersData () {
         request.post(config.listenersReportURL, {'number': listeners }, (err, res, body) => {
             if(err)
@@ -180,18 +179,6 @@ c.once('ready', () => {
 
         setTimeout(sendListenersData, 60000)
     }
-
-    // Rejoin channels that we were connected to
-    setTimeout(() => {
-        for (let guild of Object.keys(guilds)) { // loop through all the servers recorded
-            if (!c.guilds.get(guild)) return // If this guild doesn't exist, don't do anything with it (TODO: Also remove from guilds file so we don't make the mistake again)
-            let channel = getGuildConfig(guild, 'vc') // Get the channel for this guild
-            let prefix = getGuildConfig(guild, 'prefix') // Get the prefix for this guild
-
-            if (channel) joinVoice(c, guild, channel) // Connect and play if there's one set
-            if (prefix) c.registerGuildPrefix(guild, prefix) // also this
-        }
-    }, 3000)
 })
 
 c.on('guildCreate', guild => {
