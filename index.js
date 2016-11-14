@@ -86,6 +86,8 @@ function memberHasManageGuild (member) { // Return whether or not the user can m
 
 
 c.once('ready', () => {
+    // Thing to log stuff (remove me when the bot isnt broke pls)
+    c.guilds.forEach(g => console.log(g.name))
     //Initialise SharedStream events
     let errorHandler = (e) => {
         console.log('SharedStream died!')
@@ -165,14 +167,16 @@ c.once('ready', () => {
     }
 
     // Rejoin channels that we were connected to
-    for (let guild of Object.keys(guilds)) { // loop through all the servers recorded
-        if (!c.guilds.get(guild)) return // If this guild doesn't exist, don't do anything with it (TODO: Also remove from guilds file so we don't make the mistake again)
-        let channel = getGuildConfig(guild, 'vc') // Get the channel for this guild
-        let prefix = getGuildConfig(guild, 'prefix') // Get the prefix for this guild
+    setTimeout(() => {
+        for (let guild of Object.keys(guilds)) { // loop through all the servers recorded
+            if (!c.guilds.get(guild)) return // If this guild doesn't exist, don't do anything with it (TODO: Also remove from guilds file so we don't make the mistake again)
+            let channel = getGuildConfig(guild, 'vc') // Get the channel for this guild
+            let prefix = getGuildConfig(guild, 'prefix') // Get the prefix for this guild
 
-        if (channel) joinVoice(c, guild, channel) // Connect and play if there's one set
-        if (prefix) c.registerGuildPrefix(guild, prefix) // also this
-    }
+            if (channel) joinVoice(c, guild, channel) // Connect and play if there's one set
+            if (prefix) c.registerGuildPrefix(guild, prefix) // also this
+        }
+    }, 3000)
 })
 
 c.on('guildCreate', guild => {
@@ -368,5 +372,5 @@ c.connect()
 
 TODO's
 - Find more things to do
- 
+
 */
