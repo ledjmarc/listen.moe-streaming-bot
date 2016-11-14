@@ -3,6 +3,7 @@ let fs = require('fs')
 let request = require('request')
 let merge = require('merge')
 let reload = require('require-reload')(require)
+let io = require('socket.io-client')
 
 let config = require('./config.json')
 
@@ -24,6 +25,12 @@ let c = new Eris.CommandClient(config.token, { userAccount: false }, {
 })
 
 let sharedStream = c.createSharedStream(config.stream)
+
+// SOCKET stuff for retrieving radio info
+let radioJSON = {}
+let socket = io.connect('https://listen.moe/api/info/socket')
+socket.on('connect', function (obj) { radioJSON = JSON.parse(obj) })
+socket.on('update', function (obj) { radioJSON = JSON.parse(obj) })
 
 function joinVoice (client, guildId, channel) { // Join a voice channel and start playing the stream there
     let cc = client.voiceConnections.get(guildId) // Find a current connection in this guild
@@ -132,7 +139,7 @@ c.once('ready', () => {
     setInterval(currentListeners, 20000)
 
     // Changes the bot's "Now playing" status to the current song playing on the radio.
-    function gameCurrentSong () {
+    /*function gameCurrentSong () {
         getSongInfo((err, body) => {
             if (!err) {
                 c.editStatus({name: `${body.artist_name} ${config.separator || '-'} ${body.song_name}`})
@@ -141,6 +148,15 @@ c.once('ready', () => {
                 console.log("Getting song info didn't work\n"+err)
             }
         })
+
+        setTimeout(gameCurrentUsersAndGuilds, 20000)
+    }*/
+
+    function gameCurrentSong () {
+        if(radioJSON !== {})
+            c.editStatus({name: `${radioJSON.artist_name} ${config.separator || '-'} ${radioJSON.song_name}`})
+        else
+            c.editStatus({name: 'music probably'})
 
         setTimeout(gameCurrentUsersAndGuilds, 20000)
     }
@@ -310,13 +326,18 @@ c.registerCommand('unignoreall', msg => {
 c.registerCommand('np', msg => {
     // Now playing command - lists the current playing song on the radio
     if(getGuildConfig(msg.channel.guild.id, 'denied').includes(msg.channel.id)) return // Do nothing if this channel is ignored
-    getSongInfo((err, info) => {
+    /*getSongInfo((err, info) => {
         if (!err) {
             let requestby = info.request ? `\n**Requested by:** ${info.requested_by} (<https://forum.listen.moe/u/${info.requested_by}>)` : ''
             let anime = info.anime_name ? `\n**Anime:** ${info.anime_name}` : ''
             c.createMessage(msg.channel.id, `**Now playing:** "${info.song_name}" by ${info.artist_name}${requestby}${anime}`)
         }
-    })
+    })*/
+    if(radioJSON === {}) return
+    
+    let requestby = radioJSON.request ? `\n**Requested by:** ${radioJSON.requested_by} (<https://forum.listen.moe/u/${radioJSON.requested_by}>)` : ''
+    let anime = radioJSON.anime_name ? `\n**Anime:** ${radioJSON.anime_name}` : ''
+    c.createMessage(msg.channel.id, `**Now playing:** "${radioJSON.song_name}" by ${radioJSON.artist_name}${requestby}${anime}`)
 
 }, { aliases: ['playing', 'nowplaying'] })
 
