@@ -28,7 +28,7 @@ let sharedStream = c.createSharedStream(config.stream)
 
 // SOCKET stuff for retrieving radio info
 let radioJSON = {}
-let socket = io.connect('https://listen.moe/api/info/socket')
+let socket = io.connect(config.streamInfo)
 socket.on('update', function (obj) { try {radioJSON = JSON.parse(obj)} catch(e) { console.log(e)} })
 
 function joinVoice (client, guildId, channel) { // Join a voice channel and start playing the stream there
