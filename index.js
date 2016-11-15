@@ -391,6 +391,20 @@ c.registerCommand('servers', msg => {
         // hai
     });
 */
+c.on('disconnect', (err, id) => {
+	console.log('Bot disconnected for whatever reason D:')
+	process.exit(1)
+});
+
+c.on('warn', (msg, id) => {
+	console.log('Shard ' + id + ' threw the following warning:\n')
+	console.log(msg)
+});
+
+c.on('error', (err, id) => {
+	console.log('Shard ' + id + ' threw the following error:\n')
+	console.log(err)
+});
 
 c.connect()
 
