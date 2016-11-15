@@ -121,7 +121,7 @@ c.once('ready', () => {
     // Rejoin channels that we were connected to
     setTimeout(() => {
 		Set.prototype.intersection = function(setB) { var intersection = new Set(); for (var elem of setB) { if (this.has(elem)) { intersection.add(elem); } } return intersection; }
-		let g1 = new Set(Object.keys(guilds)); let g2 = new Set(c.guilds.keys()); let intersection = g1.intersection(g2); console.log(intersection.size " guilds should be connected to");
+		let g1 = new Set(Object.keys(guilds)); let g2 = new Set(c.guilds.keys()); let intersection = g1.intersection(g2); console.log(intersection.size + " guilds should be connected to");
 		
         for (let guild of Object.keys(guilds)) { // loop through all the servers recorded
             if (!c.guilds.get(guild)) {
