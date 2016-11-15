@@ -66,8 +66,8 @@ function writeGuildConfig (guild, object) { // Change a guild's config via an ob
     _guilds[guild] = newConfig // Write this new config back to the config
     if (!fs.existsSync('./backups'))
         fs.mkdirSync('./backups')
-    fs.writeFile(`backups/guilds-${Date.now()}.json`, JSON.stringify(guilds)) // Create a backup before doing anything
-    fs.writeFile('guilds.json', JSON.stringify(_guilds), 'utf-8', err => { // Store the new stuff in the file
+    fs.writeFile(`backups/guilds-${Date.now()}.json`, JSON.stringify(guilds, null, '\t')) // Create a backup before doing anything
+    fs.writeFile('guilds.json', JSON.stringify(_guilds, null, '\t'), 'utf-8', err => { // Store the new stuff in the file
         if (err) console.log(err)
         else guilds = reload('./guilds.json') // Reload the file
     })
@@ -348,7 +348,7 @@ function splitMessage(message, messageLengthCap) {
         message = message.substring(i)
     }
     strs.push(message)
-	
+
 	return strs
 }
 
@@ -364,7 +364,7 @@ c.registerCommand('eval', (msg, args) => {
     } catch (e) {
         thing = e
     }
-	
+
     let strs = splitMessage('' + thing, DISCORD_MSG_LIMIT)
     try {
 		for (let str of strs)
