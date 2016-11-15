@@ -7,6 +7,8 @@ let io = require('socket.io-client')
 
 let config = require('./config.json')
 
+const DISCORD_MSG_LIMIT = 2000
+
 let guilds
 try {
     guilds = reload('./guilds.json')
@@ -327,6 +329,21 @@ c.registerCommand('np', msg => {
 
 }, { aliases: ['playing', 'nowplaying'] })
 
+function splitMessage(message, messageLengthCap) {
+    let strs = []
+    while (message.length > messageLengthCap) {
+        let pos = message.substring(0, messageLengthCap).lastIndexOf('\n')
+        pos = pos <= 0 ? messageLengthCap : pos
+        strs.push(message.substring(0, pos))
+        let i = message.indexOf('\n', pos)+1
+        if (i < pos || i > pos+messageLengthCap) i = pos
+        message = message.substring(i)
+    }
+    strs.push(message)
+	
+	return strs
+}
+
 c.registerCommand('eval', (msg, args) => {
     // Eval command - Allows the owner to dynamically run scripts against the bot from inside Discord
     // Requires explicit owner permission inside the config file
@@ -339,7 +356,14 @@ c.registerCommand('eval', (msg, args) => {
     } catch (e) {
         thing = e
     }
-    c.createMessage(msg.channel.id, ''+thing)
+	
+    let strs = splitMessage('' + thing, DISCORD_MSG_LIMIT)
+    try {
+		for (let str of strs)
+			c.createMessage(msg.channel.id, str)
+	} catch (e) {
+		c.createMessage(msg.channel.id, e);
+	}
 })
 
 c.registerCommand('servers', msg => {
@@ -348,18 +372,7 @@ c.registerCommand('servers', msg => {
     if (!config.owners.includes(msg.author.id)) return c.createMessage(msg.channel.id, 'soz bae must be bot owner') // jkfhasdkjhfkajshdkfsf
 
     let message = c.guilds.map(g=>`\`${g.id}\` ${g.name}`).join('\n')
-    let messageLengthCap = 2000
-
-    let strs = []
-    while (message.length > messageLengthCap) {
-        let pos = message.substring(0, messageLengthCap).lastIndexOf('\n')
-        pos = pos <= 0 ? messageLengthCap : pos
-        strs.push(message.substring(0, pos))
-        let i = message.indexOf('\n', pos)+1
-        if (i < pos || i > pos+messageLengthCap) i = pos
-        message = message.substring(i)
-    }
-    strs.push(message)
+    let strs = splitMessage(message, DISCORD_MSG_LIMIT)
 
     for (let str of strs) c.createMessage(msg.channel.id, str)
 
