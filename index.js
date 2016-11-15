@@ -409,6 +409,11 @@ c.on('error', (err, id) => {
 	console.log(err)
 });
 
+c.on('shardDisconnect', (err, id) => {
+	console.log('Shard ' + id + ' disconnected with the following error:\n')
+	console.log(err)
+});
+
 c.connect()
 
 /*
