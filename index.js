@@ -339,7 +339,7 @@ c.registerCommand('eval', (msg, args) => {
     } catch (e) {
         thing = e
     }
-    c.createMessage(msg.channel.id, thing)
+    c.createMessage(msg.channel.id, ''+thing)
 })
 
 c.registerCommand('servers', msg => {
