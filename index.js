@@ -91,9 +91,9 @@ function memberHasManageGuild (member) { // Return whether or not the user can m
     return member.permission.json.manageGuild
 }
 
-
-
 c.once('ready', () => {
+	console.log(c.guilds.size + ' guilds available')
+	console.log(c.unavailableGuilds.size + ' guilds unavailable')
     // Thing to log stuff (remove me when the bot isnt broke pls)
     c.guilds.forEach(g => console.log(g.name))
     //Initialise SharedStream events
