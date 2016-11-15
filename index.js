@@ -51,6 +51,7 @@ function joinVoice (client, guildId, channel) { // Join a voice channel and star
             } else {
 				console.log('Error connecting to channel ' + channel + ' | VC was undefined')
 			}
+			console.log('SS: ' + sharedStream.voiceConnections.size + ', VC: ' + c.voiceConnections.size + ', G: ' + c.guilds.size)
         }).catch(error => {
             console.log('Error connecting to channel ' + channel + ' | ' + error)
         })
