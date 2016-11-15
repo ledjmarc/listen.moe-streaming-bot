@@ -126,7 +126,7 @@ c.once('ready', () => {
         for (let guild of Object.keys(guilds)) { // loop through all the servers recorded
             if (!c.guilds.get(guild)) {
 				console.log("Skipping guild " + guild)
-				return // If this guild doesn't exist, don't do anything with it (TODO: Also remove from guilds file so we don't make the mistake again)
+				continue // If this guild doesn't exist, don't do anything with it (TODO: Also remove from guilds file so we don't make the mistake again)
 			}
             let channel = getGuildConfig(guild, 'vc') // Get the channel for this guild
             let prefix = getGuildConfig(guild, 'prefix') // Get the prefix for this guild
