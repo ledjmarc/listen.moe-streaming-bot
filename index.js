@@ -189,14 +189,14 @@ c.once('ready', () => {
 })
 
 c.on('guildCreate', guild => {
+    c.createMessage(guild.id, HELP_MESSAGE.join('\n'))
+
     if (!c.guilds.get(guild)) return // If this guild doesn't exist, don't do anything with it (TODO: Also remove from guilds file so we don't make the mistake again)
     let channel = getGuildConfig(guild, 'vc') // Get the channel for this guild
     let prefix = getGuildConfig(guild, 'prefix') // Get the prefix for this guild
 
     if (channel) joinVoice(c, guild, channel) // Connect and play if there's one set
     if (prefix) c.registerGuildPrefix(guild, prefix) // also this
-
-    c.createMessage(guild.id, HELP_MESSAGE.join('\n'))
 })
 
 // Rewrote commands using the command framework from Eris
