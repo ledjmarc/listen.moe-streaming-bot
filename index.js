@@ -8,20 +8,18 @@ let io = require('socket.io-client')
 let config = require('./config.json')
 
 const DISCORD_MSG_LIMIT = 2000
-let HELP_MESSAGE = new Array()
-HELP_MESSAGE.push(
-    '**LISTEN.moe streaming bot by Geo1088 & friends**',
-    '',
-    '**Usage:**',
-    '    After adding me to your server, join a voice channel and type `\~\~join` to bind me to that channel. Keep in mind that you need to have the `Manage server` permission to use this command.',
-    '',
-    '**Commands:**',
-    '    **\~\~join**: Joins current Voice Channel',
-    '    **\~\~np**: Displays the Currently Playing song',
-    '    **\~\~prefix [new prefix]**: Changes the default prefix (`\~\~`) to one of your liking.',
-    '',
-    'For additional commands and help, please visit: <https://github.com/Geo1088/listen.moe-streaming-bot>'
-)
+const HELP_MESSAGE = `
+'**LISTEN.moe streaming bot by Geo1088 & friends**',
+
+**Usage:**',
+    After adding me to your server, join a voice channel and type \`~~join\` to bind me to that channel. Keep in mind that you need to have the \`Manage server\` permission to use this command.
+
+**Commands:**
+    **~~join**: Joins current Voice Channel
+    **~~np**: Displays the Currently Playing song
+    **~~prefix [new prefix]**: Changes the default prefix (\`~~\`) to one of your liking.
+
+For additional commands and help, please visit: <https://github.com/Geo1088/listen.moe-streaming-bot>`
 
 let guilds
 try {
@@ -353,7 +351,7 @@ function splitMessage(message, messageLengthCap) {
 
 c.registerCommand('help', msg => {
     // Show the help message
-    c.createMessage(msg.channel.id, HELP_MESSAGE.join('\n'))
+    c.createMessage(msg.channel.id, HELP_MESSAGE)
 })
 
 c.registerCommand('eval', (msg, args) => {
