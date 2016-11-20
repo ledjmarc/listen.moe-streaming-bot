@@ -20,6 +20,9 @@ This list assumes a prefix of `~~`.
 - `~~nowplaying`, `~~playing`, `~~np`  
   Gets the currently playing song and artist. If the song was requested by someone, also gives their name and a link to their profile on forum.listen.moe.
 
+- `~~help`  
+  Shows a real basic usage help which is the same one that appears the first time the bot joins a guild.
+
 - `~~ignore`  
   Ignores commands in the current channel. Admin commands are exempt from the ignore.
 

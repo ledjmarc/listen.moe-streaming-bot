@@ -8,6 +8,20 @@ let io = require('socket.io-client')
 let config = require('./config.json')
 
 const DISCORD_MSG_LIMIT = 2000
+let HELP_MESSAGE = new Array()
+HELP_MESSAGE.push(
+    '**LISTEN.moe streaming bot by Geo1088 & friends**',
+    '',
+    '**Usage:**',
+    '    After adding me to your server, join a voice channel and type `\~\~join` to bind me to that channel. Keep in mind that you need to have the `Manage server` permission to use this command.',
+    '',
+    '**Commands:**',
+    '    **\~\~join**: Joins current Voice Channel',
+    '    **\~\~np**: Displays the Currently Playing song',
+    '    **\~\~prefix [new prefix]**: Changes the default prefix (`\~\~`) to one of your liking.',
+    '',
+    'For additional commands and help, please visit: <https://github.com/Geo1088/listen.moe-streaming-bot>'
+)
 
 let guilds
 try {
@@ -75,16 +89,6 @@ function getGuildConfig (guild, option) { // Get a config option from a guild
     let defaults = config.guildDefaults // Grab the defaults, just in case
     if (!guilds[guild] || !guilds[guild][option]) return defaults[option] // logic whee
     return guilds[guild][option]
-}
-
-function getSongInfo (callback) { // Get the stream's info for the current song
-    request(config.streamInfo, {headers: {'User-Agent': config.ua}}, (err, res, body) => {
-        try { body = JSON.parse(body) } catch (e) { err = e }
-        // \o/
-        if (!err) return callback(null, body)
-        // shit
-        return callback(err)
-    })
 }
 
 function memberHasManageGuild (member) { // Return whether or not the user can manage the server (this is the basis for command permissions)
@@ -190,6 +194,8 @@ c.on('guildCreate', guild => {
 
     if (channel) joinVoice(c, guild, channel) // Connect and play if there's one set
     if (prefix) c.registerGuildPrefix(guild, prefix) // also this
+
+    c.createMessage(guild.id, HELP_MESSAGE.join('\n'))
 })
 
 // Rewrote commands using the command framework from Eris
@@ -341,8 +347,13 @@ function splitMessage(message, messageLengthCap) {
     }
     strs.push(message)
 
-	return strs
+    return strs
 }
+
+c.registerCommand('help', msg => {
+    // Show the help message
+    c.createMessage(msg.channel.id, HELP_MESSAGE.join('\n'))
+})
 
 c.registerCommand('eval', (msg, args) => {
     // Eval command - Allows the owner to dynamically run scripts against the bot from inside Discord
@@ -359,11 +370,11 @@ c.registerCommand('eval', (msg, args) => {
 
     let strs = splitMessage('' + thing, DISCORD_MSG_LIMIT)
     try {
-		for (let str of strs)
-			c.createMessage(msg.channel.id, str)
-	} catch (e) {
-		c.createMessage(msg.channel.id, e);
-	}
+        for (let str of strs)
+            c.createMessage(msg.channel.id, str)
+    } catch (e) {
+        c.createMessage(msg.channel.id, e)
+    }
 })
 
 c.registerCommand('servers', msg => {
