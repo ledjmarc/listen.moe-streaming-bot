@@ -36,7 +36,8 @@ let c = new Eris.CommandClient(config.token, { userAccount: false }, {
     prefix: config.guildDefaults.prefix || '~~',
     // that line actually reminds me, guildDefaults might need to be rethought
     defaultCommandOptions: {
-        guildOnly: true
+        guildOnly: true,
+        defaultHelpCommand: false
     }
 })
 
