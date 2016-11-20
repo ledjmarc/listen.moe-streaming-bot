@@ -34,10 +34,10 @@ try {
 let c = new Eris.CommandClient(config.token, { userAccount: false }, {
     description: 'LISTEN.moe streaming bot by Geo1088 & friends',
     prefix: config.guildDefaults.prefix || '~~',
+    defaultHelpCommand: false,
     // that line actually reminds me, guildDefaults might need to be rethought
     defaultCommandOptions: {
-        guildOnly: true,
-        defaultHelpCommand: false
+        guildOnly: true
     }
 })
 
