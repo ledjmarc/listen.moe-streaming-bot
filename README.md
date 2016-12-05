@@ -1,3 +1,5 @@
+**This repo is unmaintained and outdated.** The bot has since been rewritten, and the current code can be found at [anonymousthing/listen.moe-djs](https://github.com/anonymousthing/listen.moe-djs).
+
 # listen.moe music streaming Discord bot
 
 ![status: fabulous](https://img.shields.io/badge/status-fabulous-ff69b4.svg) [![Code Climate](https://img.shields.io/badge/code climate-fuck it-red.svg)](https://codeclimate.com/github/Geo1088/listen.moe-streaming-bot)
