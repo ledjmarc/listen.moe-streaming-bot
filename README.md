@@ -1,4 +1,5 @@
-**This repo is unmaintained and outdated.** The bot has since been rewritten, and the current code can be found at [anonymousthing/listen.moe-djs](https://github.com/anonymousthing/listen.moe-djs).
+# This repo is unmaintained and outdated!
+The bot has since been rewritten, and the current code can be found at [anonymousthing/listen.moe-djs](https://github.com/anonymousthing/listen.moe-djs).
 
 # listen.moe music streaming Discord bot
 
